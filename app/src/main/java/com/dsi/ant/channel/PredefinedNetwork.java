@@ -7,7 +7,7 @@ package com.dsi.ant.channel;
 public enum PredefinedNetwork {
     INVALID(-1),
     PUBLIC(0),
-    ANT_PLUS1(1), //
+    ANT_PLUS_1(1),
     ANT_FS(2);
 
     private final int mRawValue;
