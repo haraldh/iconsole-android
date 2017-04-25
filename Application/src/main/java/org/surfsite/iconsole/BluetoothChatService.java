@@ -358,7 +358,7 @@ public class BluetoothChatService {
                         /* pass */;
                     }
                     i++;
-                    write(IConsole.PING);
+                    this.write(IConsole.PING);
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
                     if (bytes > 0) {
@@ -377,7 +377,6 @@ public class BluetoothChatService {
         }
 
 
-        /*
         public void write(byte[] buffer) {
             try {
                 mmOutStream.write(buffer);
@@ -390,7 +389,6 @@ public class BluetoothChatService {
                 Log.e(TAG, "Exception during write", e);
             }
         }
-        */
 
         public void cancel() {
             try {
