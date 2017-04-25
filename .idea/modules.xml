@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Application/Application.iml" filepath="$PROJECT_DIR$/Application/Application.iml" />
-      <module fileurl="file://$PROJECT_DIR$/BluetoothChat.iml" filepath="$PROJECT_DIR$/BluetoothChat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/iconsole-android.iml" filepath="$PROJECT_DIR$/iconsole-android.iml" />
     </modules>
   </component>
 </project>

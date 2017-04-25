@@ -153,8 +153,8 @@ public class BluetoothChatService {
      * @param device The BluetoothDevice that has been connected
      */
     public synchronized void connected(BluetoothSocket socket, BluetoothDevice
-            device, final String socketType) {
-        Log.d(TAG, "connected, Socket Type:" + socketType);
+            device) {
+        Log.d(TAG, "connected");
 
         // Cancel the thread that completed the connection
         if (mConnectThread != null) {
@@ -169,7 +169,7 @@ public class BluetoothChatService {
         }
 
         // Start the thread to manage the connection and perform transmissions
-        mConnectedThread = new ConnectedThread(socket, socketType);
+        mConnectedThread = new ConnectedThread(socket);
         mConnectedThread.start();
 
         // Send the name of the connected device back to the UI Activity
@@ -258,7 +258,6 @@ public class BluetoothChatService {
     private class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
-        private String mSocketType;
 
         public ConnectThread(BluetoothDevice device) {
             mmDevice = device;
@@ -276,8 +275,8 @@ public class BluetoothChatService {
         }
 
         public void run() {
-            Log.i(TAG, "BEGIN mConnectThread SocketType:" + mSocketType);
-            setName("ConnectThread" + mSocketType);
+            Log.i(TAG, "BEGIN mConnectThread");
+            setName("ConnectThread");
 
             // Always cancel discovery because it will slow down a connection
             mAdapter.cancelDiscovery();
@@ -292,8 +291,7 @@ public class BluetoothChatService {
                 try {
                     mmSocket.close();
                 } catch (IOException e2) {
-                    Log.e(TAG, "unable to close() " + mSocketType +
-                            " socket during connection failure", e2);
+                    Log.e(TAG, "unable to close() socket during connection failure", e2);
                 }
                 connectionFailed();
                 return;
@@ -305,14 +303,14 @@ public class BluetoothChatService {
             }
 
             // Start the connected thread
-            connected(mmSocket, mmDevice, mSocketType);
+            connected(mmSocket, mmDevice);
         }
 
         public void cancel() {
             try {
                 mmSocket.close();
             } catch (IOException e) {
-                Log.e(TAG, "close() of connect " + mSocketType + " socket failed", e);
+                Log.e(TAG, "close() of socket failed", e);
             }
         }
     }
@@ -326,8 +324,8 @@ public class BluetoothChatService {
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
 
-        public ConnectedThread(BluetoothSocket socket, String socketType) {
-            Log.d(TAG, "create ConnectedThread: " + socketType);
+        public ConnectedThread(BluetoothSocket socket) {
+            Log.d(TAG, "create ConnectedThread");
             mmSocket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
