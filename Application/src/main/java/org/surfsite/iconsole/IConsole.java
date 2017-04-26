@@ -7,17 +7,17 @@ import java.io.OutputStream;
  * Created by harald on 25.04.17.
  */
 
-public class IConsole {
-    public static final byte[] PING     = {(byte) 0xf0, (byte) 0xa0, (byte) 0x01, (byte) 0x01, (byte) 0x92 };
-    public static final byte[] INIT_A0  = {(byte) 0xf0, (byte) 0xa0, 0x02, 0x02, (byte) 0x94};
-    public static final byte[] PONG     = {(byte) 0xf0, (byte) 0xb0, 0x01, 0x01, (byte) 0xa2};
-    public static final byte[] STATUS   = {(byte) 0xf0, (byte) 0xa1, 0x01, 0x01, (byte) 0x93};
-    public static final byte[] INIT_A3  = {(byte) 0xf0, (byte) 0xa3, 0x01, 0x01, 0x01, (byte) 0x96};
-    public static final byte[] INIT_A4  = {(byte) 0xf0, (byte) 0xa4, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, (byte) 0xa0};
-    public static final byte[] START    = {(byte) 0xf0, (byte) 0xa5, 0x01, 0x01, 0x02, (byte) 0x99};
-    public static final byte[] STOP     = {(byte) 0xf0, (byte) 0xa5, 0x01, 0x01, 0x04, (byte) 0x9b};
-    public static final byte[] READ     = {(byte) 0xf0, (byte) 0xa2, 0x01, 0x01, (byte) 0x94};
-    public static final byte[] SETLEVEL = {(byte) 0xf0, (byte) 0xa6, 0x01, 0x01, 0x01, (byte)((0xf0+0xa6+3) & 0xFF)};
+class IConsole {
+    private static final byte[] PING     = {(byte) 0xf0, (byte) 0xa0, (byte) 0x01, (byte) 0x01, (byte) 0x92 };
+    private static final byte[] INIT_A0  = {(byte) 0xf0, (byte) 0xa0, 0x02, 0x02, (byte) 0x94};
+    private static final byte[] PONG     = {(byte) 0xf0, (byte) 0xb0, 0x01, 0x01, (byte) 0xa2};
+    private static final byte[] STATUS   = {(byte) 0xf0, (byte) 0xa1, 0x01, 0x01, (byte) 0x93};
+    private static final byte[] INIT_A3  = {(byte) 0xf0, (byte) 0xa3, 0x01, 0x01, 0x01, (byte) 0x96};
+    private static final byte[] INIT_A4  = {(byte) 0xf0, (byte) 0xa4, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, (byte) 0xa0};
+    private static final byte[] START    = {(byte) 0xf0, (byte) 0xa5, 0x01, 0x01, 0x02, (byte) 0x99};
+    private static final byte[] STOP     = {(byte) 0xf0, (byte) 0xa5, 0x01, 0x01, 0x04, (byte) 0x9b};
+    private static final byte[] READ     = {(byte) 0xf0, (byte) 0xa2, 0x01, 0x01, (byte) 0x94};
+    private static final byte[] SETLEVEL = {(byte) 0xf0, (byte) 0xa6, 0x01, 0x01, 0x01, (byte)((0xf0+0xa6+3) & 0xFF)};
 
     private enum State {
         BEGIN,
@@ -40,7 +40,7 @@ public class IConsole {
     private final DataListener mDataListener;
     private final DebugListener mDebugListener;
 
-    public IConsole(InputStream inputStream, OutputStream outputStream, DataListener dataListener, DebugListener debugListener) {
+    IConsole(InputStream inputStream, OutputStream outputStream, DataListener dataListener, DebugListener debugListener) {
         this.mInputStream = inputStream;
         this.mOutputStream = outputStream;
         this.mDataListener = dataListener;
@@ -50,7 +50,7 @@ public class IConsole {
         this.mSetLevel = 1;
     }
 
-    public class Data {
+    class Data {
         long mTime;         // in seconds
         int mSpeed10;
         int mRPM;
@@ -60,7 +60,7 @@ public class IConsole {
         int mPower10;
         int mLevel;
 
-        public Data(long mTime, int mSpeed10, int mRPM, int mDistance10, int mCalories, int mHF, int mPower10, int mLevel) {
+        Data(long mTime, int mSpeed10, int mRPM, int mDistance10, int mCalories, int mHF, int mPower10, int mLevel) {
             this.mTime = mTime;
             this.mSpeed10 = mSpeed10;
             this.mRPM = mRPM;
@@ -71,7 +71,7 @@ public class IConsole {
             this.mLevel = mLevel;
         }
 
-        public Data(byte[] bytes) {
+        Data(byte[] bytes) {
             this.mTime = (((bytes[2]-1) * 24 + bytes[3]-1) * 60 +  bytes[4]-1) * 60 + bytes[5]-1 ;
             this.mSpeed10    = 100 * (bytes[ 6] - 1) + bytes[ 7] - 1;
             this.mRPM        = 100 * (bytes[ 8] - 1) + bytes[ 9] - 1;
@@ -83,17 +83,17 @@ public class IConsole {
         }
     }
 
-    public interface DataListener {
+    interface DataListener {
         void onData(Data data);
         void onError(Exception e);
     }
 
-    public interface DebugListener {
+    interface DebugListener {
         void onRead(byte[] bytes);
         void onWrite(byte[] bytes);
     }
 
-    public boolean processIO() {
+    boolean processIO() {
         synchronized (this) {
             Data data = new Data(0, 0, 0, 0, 0, 0, 0, 0);
 
@@ -107,11 +107,11 @@ public class IConsole {
         return true;
     }
 
-    public boolean stop() {
+    boolean stop() {
         return true;
     }
 
-    public boolean setLevel(int level) {
+    boolean setLevel(int level) {
         synchronized (this) {
             if (mCurrentState != State.READ)
                 return false;
@@ -232,7 +232,7 @@ def send_level(lvl):
 
  */
 
-    public static byte[] hexStringToByteArray(String s) {
+    static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
@@ -242,7 +242,7 @@ def send_level(lvl):
         return data;
     }
 
-    public static String byteArrayToHex(byte[] a) {
+    static String byteArrayToHex(byte[] a) {
         StringBuilder sb = new StringBuilder(a.length * 2);
         for(byte b: a)
             sb.append(String.format("%02x", b));
