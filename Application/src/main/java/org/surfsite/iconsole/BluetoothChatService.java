@@ -323,6 +323,7 @@ public class BluetoothChatService {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
+        private final IConsole mmIConsole;
 
         public ConnectedThread(BluetoothSocket socket) {
             Log.d(TAG, "create ConnectedThread");
@@ -341,56 +342,60 @@ public class BluetoothChatService {
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
             mState = STATE_CONNECTED;
-        }
 
-        public void run() {
-            Log.i(TAG, "BEGIN mConnectedThread");
-            byte[] buffer = new byte[5];
-            int bytes;
-            int i = 0;
+            mmIConsole = new IConsole(mmInStream, mmOutStream, new IConsole.DataListner() {
+                @Override
+                public void onData(IConsole.Data data) {
+                    Log.i(TAG, "mConnectedThread: " + data.toString());
+                    /* print */
+                }
 
-            // Keep listening to the InputStream while connected
-            while (mState == STATE_CONNECTED && i < 100) {
-                try {
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        /* pass */;
-                    }
-                    i++;
-                    this.write(IConsole.PING);
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
-                    if (bytes > 0) {
-                        String hexbuf = IConsole.byteArrayToHex(Arrays.copyOfRange(buffer, 0, bytes)) + '\n';
+                @Override
+                public void onError(Exception e) {
+                    Log.e(TAG, "mConnectedThread Error: ", e);
+
+                    if (e instanceof IOException)
+                        connectionLost();
+                }
+            }, new IConsole.DebugListner() {
+                @Override
+                public void onRead(byte[] buffer) {
+                    if (buffer.length > 0) {
+                        String hexbuf = IConsole.byteArrayToHex(Arrays.copyOfRange(buffer, 0, buffer.length)) + '\n';
 
                         // Send the obtained bytes to the UI Activity
                         mHandler.obtainMessage(Constants.MESSAGE_READ, hexbuf.length(), -1, hexbuf.getBytes())
                                 .sendToTarget();
                     }
-                } catch (IOException e) {
-                    Log.e(TAG, "disconnected", e);
-                    connectionLost();
-                    break;
                 }
+
+                @Override
+                public void onWrite(byte[] buffer) {
+                    String hexbuf = IConsole.byteArrayToHex(buffer) + '\n';
+
+                    // Share the sent message back to the UI Activity
+                    mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, hexbuf.getBytes())
+                            .sendToTarget();
+                }
+            });
+        }
+
+        public void run() {
+            Log.i(TAG, "BEGIN mConnectedThread");
+
+            while (mState == STATE_CONNECTED) {
+                if (!mmIConsole.processIO())
+                    break;
             }
         }
 
-
-        public void write(byte[] buffer) {
-            try {
-                mmOutStream.write(buffer);
-                String hexbuf = IConsole.byteArrayToHex(buffer) + '\n';
-
-                // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, hexbuf.getBytes())
-                        .sendToTarget();
-            } catch (IOException e) {
-                Log.e(TAG, "Exception during write", e);
-            }
+        public boolean setLevel(int level) {
+            return mmIConsole.setLevel(level);
         }
 
         public void cancel() {
+            mmIConsole.stop();
+
             try {
                 mmSocket.close();
             } catch (IOException e) {

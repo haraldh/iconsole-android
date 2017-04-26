@@ -1,42 +1,127 @@
 package org.surfsite.iconsole;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /**
  * Created by harald on 25.04.17.
  */
 
 public class IConsole {
-    public static final byte[] PING = { (byte) 0xf0, (byte) 0xa0, (byte) 0x01, (byte) 0x01, (byte) 0x92 };
-    /*
-    INIT_A0 = struct.pack('BBBBB', 0xf0, 0xa0, 0x02, 0x02, 0x94)
-    PING = struct.pack('BBBBB', 0xf0, 0xa0, 0x01, 0x01, 0x92)
-    PONG = struct.pack('BBBBB', 0xf0, 0xb0, 0x01, 0x01, 0xa2)
-    STATUS = struct.pack('BBBBB', 0xf0, 0xa1, 0x01, 0x01, 0x93)
-    INIT_A3 = struct.pack('BBBBBB', 0xf0, 0xa3, 0x01, 0x01, 0x01, 0x96)
-    INIT_A4 = struct.pack('BBBBBBBBBBBBBBB', 0xf0, 0xa4, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0xa0)
-    START = struct.pack('BBBBBB', 0xf0, 0xa5, 0x01, 0x01, 0x02, 0x99)
-    STOP = struct.pack('BBBBBB', 0xf0, 0xa5, 0x01, 0x01, 0x04, 0x9b)
-    READ = struct.pack('BBBBB', 0xf0, 0xa2, 0x01, 0x01, 0x94)
-*/
+    public static final byte[] PING     = {(byte) 0xf0, (byte) 0xa0, (byte) 0x01, (byte) 0x01, (byte) 0x92 };
+    public static final byte[] INIT_A0  = {(byte) 0xf0, (byte) 0xa0, 0x02, 0x02, (byte) 0x94};
+    public static final byte[] PONG     = {(byte) 0xf0, (byte) 0xb0, 0x01, 0x01, (byte) 0xa2};
+    public static final byte[] STATUS   = {(byte) 0xf0, (byte) 0xa1, 0x01, 0x01, (byte) 0x93};
+    public static final byte[] INIT_A3  = {(byte) 0xf0, (byte) 0xa3, 0x01, 0x01, 0x01, (byte) 0x96};
+    public static final byte[] INIT_A4  = {(byte) 0xf0, (byte) 0xa4, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, (byte) 0xa0};
+    public static final byte[] START    = {(byte) 0xf0, (byte) 0xa5, 0x01, 0x01, 0x02, (byte) 0x99};
+    public static final byte[] STOP     = {(byte) 0xf0, (byte) 0xa5, 0x01, 0x01, 0x04, (byte) 0x9b};
+    public static final byte[] READ     = {(byte) 0xf0, (byte) 0xa2, 0x01, 0x01, (byte) 0x94};
+    public static final byte[] SETLEVEL = {(byte) 0xf0, (byte) 0xa6, 0x01, 0x01, 0x01, (byte)((0xf0+0xa6+3) & 0xFF)};
 
-    /*
-       def __init__(self, got):
-        gota = struct.unpack('BBBBBBBBBBBBBBBBBBBBB', got)
-        self.time_str = "%02d:%02d:%02d:%02d" % (gota[2]-1, gota[3]-1, gota[4]-1, gota[5]-1)
-        self.speed = ((100*(gota[6]-1) + gota[7] -1) / 10.0)
-        self.speed_str = "V: % 3.1f km/h" % self.speed
-        self.rpm = ((100*(gota[8]-1) + gota[9] -1))
-        self.rpm_str = "% 3d RPM" % self.rpm
-        self.distance = ((100*(gota[10]-1) + gota[11] -1) / 10.0)
-        self.distance_str = "D: % 3.1f km" % self.distance
-        self.calories = ((100*(gota[12]-1) + gota[13] -1))
-        self.calories_str = "% 3d kcal" % self.calories
-        self.hf = ((100*(gota[14]-1) + gota[15] -1))
-        self.hf_str = "HF % 3d" % self.hf
-        self.power = ((100*(gota[16]-1) + gota[17] -1) / 10.0)
-        self.power_str = "% 3.1f W" % self.power
-        self.lvl = gota[18] -1
-        self.lvl_str = "L: %d" % self.lvl
-     */
+    private enum State {
+        BEGIN,
+        PING,
+        A0,
+        A1,
+        A3,
+        A4,
+        START,
+        STOP,
+        READ,
+        SETLEVEL,
+    }
+
+    private State mCurrentState;
+    private State mNextState;
+    private int mSetLevel;
+    private final InputStream mInputStream;
+    private final OutputStream mOutputStream;
+    private final DataListner mDataListner;
+    private final DebugListner mDebugListner;
+
+    public IConsole(InputStream inputStream, OutputStream outputStream, DataListner dataListner, DebugListner debugListner) {
+        this.mInputStream = inputStream;
+        this.mOutputStream = outputStream;
+        this.mDataListner = dataListner;
+        this.mDebugListner = debugListner;
+        this.mCurrentState = State.BEGIN;
+        this.mNextState = State.PING;
+        this.mSetLevel = 1;
+    }
+
+    public class Data {
+        long mTime;         // in seconds
+        int mSpeed10;
+        int mRPM;
+        int mDistance10;
+        int mCalories;
+        int mHF;
+        int mPower10;
+        int mLevel;
+
+        public Data(long mTime, int mSpeed10, int mRPM, int mDistance10, int mCalories, int mHF, int mPower10, int mLevel) {
+            this.mTime = mTime;
+            this.mSpeed10 = mSpeed10;
+            this.mRPM = mRPM;
+            this.mDistance10 = mDistance10;
+            this.mCalories = mCalories;
+            this.mHF = mHF;
+            this.mPower10 = mPower10;
+            this.mLevel = mLevel;
+        }
+
+        public Data(byte[] bytes) {
+            this.mTime = (((bytes[2]-1) * 24 + bytes[3]-1) * 60 +  bytes[4]-1) * 60 + bytes[5]-1 ;
+            this.mSpeed10    = 100 * (bytes[ 6] - 1) + bytes[ 7] - 1;
+            this.mRPM        = 100 * (bytes[ 8] - 1) + bytes[ 9] - 1;
+            this.mDistance10 = 100 * (bytes[10] - 1) + bytes[11] - 1;
+            this.mCalories   = 100 * (bytes[12] - 1) + bytes[13] - 1;
+            this.mHF         = 100 * (bytes[14] - 1) + bytes[15] - 1;
+            this.mPower10    = 100 * (bytes[16] - 1) + bytes[17] - 1;
+            this.mLevel      = bytes[18] -1;
+        }
+    }
+
+    public interface DataListner {
+        void onData(Data data);
+        void onError(Exception e);
+    }
+
+    public interface DebugListner {
+        void onRead(byte[] bytes);
+        void onWrite(byte[] bytes);
+    }
+
+    public boolean processIO() {
+        synchronized (this) {
+            Data data = new Data(0, 0, 0, 0, 0, 0, 0, 0);
+
+            if (null != mDebugListner) {
+                mDebugListner.onWrite(PING);
+                mDebugListner.onRead(PONG);
+            }
+
+            mDataListner.onData(data);
+        }
+        return true;
+    }
+
+    public boolean stop() {
+        return true;
+    }
+
+    public boolean setLevel(int level) {
+        synchronized (this) {
+            if (mCurrentState != State.READ)
+                return false;
+
+            this.mCurrentState = State.SETLEVEL;
+            this.mNextState = State.READ;
+            this.mSetLevel = level;
+        }
+        return true;
+    }
 
     /*
     def send_ack(packet, expect=None, plen=0):
