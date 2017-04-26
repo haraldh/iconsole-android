@@ -32,7 +32,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.android.bluetoothchat.R;
+import org.surfsite.iconsole.R;
 import org.surfsite.iconsole.common.logger.Log;
 
 import java.util.Set;

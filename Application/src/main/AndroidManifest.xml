@@ -16,7 +16,7 @@
 -->
 
 <manifest
-    package="com.example.android.bluetoothchat"
+    package="org.surfsite.iconsole"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:versionCode="1"
     android:versionName="1.0">
@@ -33,7 +33,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name="org.surfsite.iconsole.MainActivity"
+            android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/app_name">
             <intent-filter>
@@ -43,7 +43,7 @@
         </activity>
 
         <activity
-            android:name="org.surfsite.iconsole.DeviceListActivity"
+            android:name=".DeviceListActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/select_device"
             android:theme="@android:style/Theme.Holo.Dialog"/>

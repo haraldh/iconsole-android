@@ -23,7 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ViewAnimator;
 
-import com.example.android.bluetoothchat.R;
+import org.surfsite.iconsole.R;
 import org.surfsite.iconsole.common.activities.SampleActivityBase;
 import org.surfsite.iconsole.common.logger.Log;
 import org.surfsite.iconsole.common.logger.LogFragment;

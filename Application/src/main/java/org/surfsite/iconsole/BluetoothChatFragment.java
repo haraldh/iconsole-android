@@ -42,7 +42,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.android.bluetoothchat.R;
+import org.surfsite.iconsole.R;
 import org.surfsite.iconsole.common.logger.Log;
 
 import java.util.Locale;
