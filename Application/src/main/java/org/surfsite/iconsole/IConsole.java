@@ -37,14 +37,14 @@ public class IConsole {
     private int mSetLevel;
     private final InputStream mInputStream;
     private final OutputStream mOutputStream;
-    private final DataListner mDataListner;
-    private final DebugListner mDebugListner;
+    private final DataListener mDataListener;
+    private final DebugListener mDebugListener;
 
-    public IConsole(InputStream inputStream, OutputStream outputStream, DataListner dataListner, DebugListner debugListner) {
+    public IConsole(InputStream inputStream, OutputStream outputStream, DataListener dataListener, DebugListener debugListener) {
         this.mInputStream = inputStream;
         this.mOutputStream = outputStream;
-        this.mDataListner = dataListner;
-        this.mDebugListner = debugListner;
+        this.mDataListener = dataListener;
+        this.mDebugListener = debugListener;
         this.mCurrentState = State.BEGIN;
         this.mNextState = State.PING;
         this.mSetLevel = 1;
@@ -83,12 +83,12 @@ public class IConsole {
         }
     }
 
-    public interface DataListner {
+    public interface DataListener {
         void onData(Data data);
         void onError(Exception e);
     }
 
-    public interface DebugListner {
+    public interface DebugListener {
         void onRead(byte[] bytes);
         void onWrite(byte[] bytes);
     }
@@ -97,12 +97,12 @@ public class IConsole {
         synchronized (this) {
             Data data = new Data(0, 0, 0, 0, 0, 0, 0, 0);
 
-            if (null != mDebugListner) {
-                mDebugListner.onWrite(PING);
-                mDebugListner.onRead(PONG);
+            if (null != mDebugListener) {
+                mDebugListener.onWrite(PING);
+                mDebugListener.onRead(PONG);
             }
 
-            mDataListner.onData(data);
+            mDataListener.onData(data);
         }
         return true;
     }

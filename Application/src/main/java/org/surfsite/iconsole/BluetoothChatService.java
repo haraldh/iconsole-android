@@ -343,7 +343,7 @@ public class BluetoothChatService {
             mmOutStream = tmpOut;
             mState = STATE_CONNECTED;
 
-            mmIConsole = new IConsole(mmInStream, mmOutStream, new IConsole.DataListner() {
+            mmIConsole = new IConsole(mmInStream, mmOutStream, new IConsole.DataListener() {
                 @Override
                 public void onData(IConsole.Data data) {
                     Log.i(TAG, "mConnectedThread: " + data.toString());
@@ -357,7 +357,7 @@ public class BluetoothChatService {
                     if (e instanceof IOException)
                         connectionLost();
                 }
-            }, new IConsole.DebugListner() {
+            }, new IConsole.DebugListener() {
                 @Override
                 public void onRead(byte[] buffer) {
                     if (buffer.length > 0) {
