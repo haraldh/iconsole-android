@@ -1,7 +1,10 @@
 package org.surfsite.iconsole;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by harald on 25.04.17.
@@ -10,7 +13,7 @@ import java.io.OutputStream;
 class IConsole {
     private static final byte[] PING     = {(byte) 0xf0, (byte) 0xa0, (byte) 0x01, (byte) 0x01, (byte) 0x92 };
     private static final byte[] INIT_A0  = {(byte) 0xf0, (byte) 0xa0, 0x02, 0x02, (byte) 0x94};
-    private static final byte[] PONG     = {(byte) 0xf0, (byte) 0xb0, 0x01, 0x01, (byte) 0xa2};
+    //private static final byte[] PONG     = {(byte) 0xf0, (byte) 0xb0, 0x01, 0x01, (byte) 0xa2};
     private static final byte[] STATUS   = {(byte) 0xf0, (byte) 0xa1, 0x01, 0x01, (byte) 0x93};
     private static final byte[] INIT_A3  = {(byte) 0xf0, (byte) 0xa3, 0x01, 0x01, 0x01, (byte) 0x96};
     private static final byte[] INIT_A4  = {(byte) 0xf0, (byte) 0xa4, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, (byte) 0xa0};
@@ -24,6 +27,7 @@ class IConsole {
         PING,
         A0,
         A1,
+        A1_POST_PING,
         A3,
         A4,
         START,
@@ -32,9 +36,13 @@ class IConsole {
         SETLEVEL,
     }
 
-    private State mCurrentState;
-    private State mNextState;
-    private int mSetLevel;
+    private State mCurrentState = State.BEGIN;
+    private State mNextState = State.PING;
+    private boolean mWaitAck = false;
+    private int mSetLevel = 1;
+    private long mTimesent = 0;
+    private int mExpectLen = 0;
+    private byte[] mExpectPacket;
     private final InputStream mInputStream;
     private final OutputStream mOutputStream;
     private final DataListener mDataListener;
@@ -45,12 +53,9 @@ class IConsole {
         this.mOutputStream = outputStream;
         this.mDataListener = dataListener;
         this.mDebugListener = debugListener;
-        this.mCurrentState = State.BEGIN;
-        this.mNextState = State.PING;
-        this.mSetLevel = 1;
     }
 
-    class Data {
+    class Data implements java.io.Serializable {
         long mTime;         // in seconds
         int mSpeed10;
         int mRPM;
@@ -93,21 +98,17 @@ class IConsole {
         void onWrite(byte[] bytes);
     }
 
-    boolean processIO() {
+    boolean start() {
         synchronized (this) {
-            Data data = new Data(0, 0, 0, 0, 0, 0, 0, 0);
-
-            if (null != mDebugListener) {
-                mDebugListener.onWrite(PING);
-                mDebugListener.onRead(PONG);
-            }
-
-            mDataListener.onData(data);
+            this.mNextState = State.A0;
         }
         return true;
     }
 
     boolean stop() {
+        synchronized (this) {
+            this.mNextState = State.STOP;
+        }
         return true;
     }
 
@@ -116,121 +117,190 @@ class IConsole {
             if (mCurrentState != State.READ)
                 return false;
 
-            this.mCurrentState = State.SETLEVEL;
-            this.mNextState = State.READ;
+            this.mNextState = State.SETLEVEL;
             this.mSetLevel = level;
         }
         return true;
     }
 
-    /*
-    def send_ack(packet, expect=None, plen=0):
-    if expect == None:
-        expect = 0xb0 | (ord(packet[1]) & 0xF)
+    boolean send(byte[] packet, byte expect, int plen) throws IOException {
+        long now = System.currentTimeMillis();
 
-    if plen == 0:
-        plen = len(packet)
+        if ((now - mTimesent) < 200) {
+            return false;
+        }
 
-    got = None
-    while got == None:
-        sleep(0.1)
-        sock.sendall(packet)
-        i = 0
-        while got == None and i < 6:
-            i+=1
-            sleep(0.1)
-            got = sock.recv(plen)
-            if len(got) == plen:
-                #print "<-" + hexlify(got)
-                pass
-            else:
-                if len(got) > 0:
-                    #print "Got len == %d" % len(got)
-                    pass
-                got = None
+        // Flush input stream
+        try {
+            mInputStream.skip(mInputStream.available());
+        } catch (IOException e) {
+            ; // ignore
+        }
 
-        if got and len(got) >= 3 and got[0] == packet[0] and ord(got[1]) == expect:
-            break
-        got = None
-        #print "---> Retransmit"
-    return got
+        // Send packet
+        mOutputStream.write(packet);
 
-def send_level(lvl):
-    packet = struct.pack('BBBBBB', 0xf0, 0xa6, 0x01, 0x01, lvl+1, (0xf0+0xa6+3+lvl) & 0xFF)
-    got = send_ack(packet)
-    return got
+        if (null != mDataListener)
+            mDebugListener.onWrite(packet);
 
-     */
+        mTimesent = System.currentTimeMillis();
+        mExpectPacket = packet;
+        mExpectPacket[1] = expect;
+        mExpectLen = plen;
+        mWaitAck = true;
+        return true;
+    }
 
-/*
-    send_ack(PING)
-    prints(win, "ping done")
+    private boolean send(byte[] packet) throws IOException {
+        return send(packet, (byte)(0xb0 | (packet[1] & 0xF)), packet.length);
+    }
 
-    send_ack(INIT_A0, expect=0xb7, plen=6)
-    prints(win, "A0 done")
+    private boolean send(byte[] packet, int plen) throws IOException {
+        return send(packet, (byte)(0xb0 | (packet[1] & 0xF)), plen);
+    }
 
-    for i in range(0, 5):
-        send_ack(PING)
-        prints(win, "ping done")
+    private boolean send_level(int level) throws IOException {
+        byte[] packet = SETLEVEL.clone();
+        packet[4] = (byte) (packet[4] + level);
+        packet[5] = (byte) ((packet[5] + level) & 0xFF);
+        return send(packet);
+    }
 
-    send_ack(STATUS, plen=6)
-    prints(win, "status done")
+    private byte[] wait_ack() throws IOException, TimeoutException {
+        byte[] buffer = new byte[mExpectLen];
+        int bytes;
 
-    send_ack(PING)
-    prints(win, "ping done")
+        long now = System.currentTimeMillis();
 
-    send_ack(INIT_A3)
-    prints(win, "A3 done")
+        if ((now - mTimesent) > 1000000) {
+            mWaitAck = false;
+            return null;
+        }
 
-    send_ack(INIT_A4)
-    prints(win, "A4 done")
+        if (mInputStream.available() < mExpectLen)
+            return null;
 
-    send_ack(START)
-    prints(win, "START done")
+        bytes = mInputStream.read(buffer);
 
-    level = 1
+        if (null != mDebugListener)
+            mDebugListener.onRead(Arrays.copyOfRange(buffer, 0, bytes));
 
-    while True:
-        sleep(0.25)
-        while True:
-            key = win.getch()
-            if key == ord('q'):
-                return
-            elif key == ord('a') or key == curses.KEY_UP or key == curses.KEY_RIGHT:
-                if level < 31:
-                    level += 1
-                prints(win, "Level: %d" % level)
-                send_level(level)
+        if (bytes != mExpectLen) {
+            throw new IOException("Wrong number of bytes read. Expected " + mExpectLen + ", got " + bytes);
+        }
 
-            elif key == ord('y') or key == curses.KEY_DOWN or key == curses.KEY_LEFT:
-                if level > 1:
-                    level -= 1
-                prints(win, "Level: %d" % level)
-                send_level(level)
-            elif key == -1:
-                break
+        if (buffer[0] != mExpectPacket[0]) {
+            throw new IOException("Byte 0 wrong. Expected " + String.format("%02x", mExpectPacket[0]) + ", got " + String.format("%02x", buffer[0]));
+        }
 
-        got = send_ack(READ, plen=21)
-        if len(got) == 21:
-            ic = IConsole(got)
-            power_meter.update(power = ic.power, cadence = ic.rpm)
-            speed.update(ic.speed)
-            win.addstr(0,0, "%s - %s - %s - %s - %s - %s - %s - %s" % (ic.time_str,
-                                                             ic.speed_str,
-                                                             ic.rpm_str,
-                                                             ic.distance_str,
-                                                             ic.calories_str,
-                                                             ic.hf_str,
-                                                             ic.power_str,
-                                                             ic.lvl_str))
+        if (buffer[1] != mExpectPacket[1]) {
+            throw new IOException("Byte 1 wrong. Expected " + String.format("%02x", mExpectPacket[1]) + ", got " + String.format("%02x", buffer[1]));
+        }
 
- */
+        return buffer;
+    }
 
-/*
-        send_ack(STOP)
-        send_ack(PING)
+    private boolean processIOSend() throws IOException {
+        switch (mCurrentState) {
+            case BEGIN:
+                mCurrentState = mNextState;
+                break;
+            case PING:
+                send(PING);
+                break;
+            case A0:
+                send(INIT_A0, (byte)0xb7, 6);
+                break;
+            case A1:
+                send(STATUS, 6);
+                break;
+            case A1_POST_PING:
+                send(PING);
+                break;
+            case A3:
+                send(INIT_A3);
+                break;
+            case A4:
+                send(INIT_A4);
+                break;
+            case START:
+                send(START);
+                break;
+            case STOP:
+                send(STOP);
+                break;
+            case READ:
+                send(READ);
+                break;
+            case SETLEVEL:
+                send_level(mSetLevel);
+                break;
+        }
+        return true;
+    }
 
- */
+    private boolean processIOAck() throws IOException, TimeoutException {
+        byte[] got = null;
+        got = wait_ack();
+        if (null == got)
+            return true;
+
+        if(mCurrentState == State.READ)
+            mDataListener.onData(new Data(got));
+
+        mCurrentState = mNextState;
+        switch (mNextState) {
+            case BEGIN:
+                mNextState = State.PING;
+                break;
+            case PING:
+                mNextState = State.PING;
+                break;
+            case A0:
+                mNextState = State.A1;
+                break;
+            case A1:
+                mNextState = State.A1_POST_PING;
+                break;
+            case A1_POST_PING:
+                mNextState = State.A3;
+                break;
+            case A3:
+                mNextState = State.A4;
+                break;
+            case A4:
+                mNextState = State.START;
+                break;
+            case START:
+                mNextState = State.READ;
+                break;
+            case STOP:
+                mNextState = State.PING;
+                break;
+            case READ:
+                mNextState = State.READ;
+                break;
+            case SETLEVEL:
+                mNextState = State.READ;
+                break;
+        }
+        return true;
+    }
+
+    boolean processIO() {
+        synchronized (this) {
+            try {
+                if (! mWaitAck) {
+                    return processIOSend();
+                } else {
+                    return processIOAck();
+                }
+            } catch (Exception e) {
+                mDataListener.onError(e);
+                return false;
+            }
+        }
+    }
 
     static byte[] hexStringToByteArray(String s) {
         int len = s.length();

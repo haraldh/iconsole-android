@@ -45,6 +45,8 @@ import android.widget.Toast;
 import com.example.android.bluetoothchat.R;
 import org.surfsite.iconsole.common.logger.Log;
 
+import java.util.Locale;
+
 /**
  * This fragment controls Bluetooth to communicate with other devices.
  */
@@ -59,8 +61,9 @@ public class BluetoothChatFragment extends Fragment {
 
     // Layout Views
     private ListView mConversationView;
-    private EditText mOutEditText;
-    private Button mSendButton;
+    private Button mStartButton;
+    private Button mStopButton;
+    private Button mDisconnectButton;
 
     /**
      * Name of the connected device
@@ -71,11 +74,6 @@ public class BluetoothChatFragment extends Fragment {
      * Array adapter for the conversation thread
      */
     private ArrayAdapter<String> mConversationArrayAdapter;
-
-    /**
-     * String buffer for outgoing messages
-     */
-    private StringBuffer mOutStringBuffer;
 
     /**
      * Local Bluetooth adapter
@@ -150,8 +148,9 @@ public class BluetoothChatFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mConversationView = (ListView) view.findViewById(R.id.in);
-        mOutEditText = (EditText) view.findViewById(R.id.edit_text_out);
-        mSendButton = (Button) view.findViewById(R.id.button_send);
+        mStartButton = (Button) view.findViewById(R.id.button_start);
+        mStopButton = (Button) view.findViewById(R.id.button_stop);
+        mDisconnectButton = (Button) view.findViewById(R.id.button_disconnect);
     }
 
     /**
@@ -165,27 +164,30 @@ public class BluetoothChatFragment extends Fragment {
 
         mConversationView.setAdapter(mConversationArrayAdapter);
 
-        // Initialize the compose field with a listener for the return key
-        mOutEditText.setOnEditorActionListener(mWriteListener);
-
-        // Initialize the send button with a listener that for click events
-        mSendButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Send a message using content of the edit text widget
-                View view = getView();
-                if (null != view) {
-                    TextView textView = (TextView) view.findViewById(R.id.edit_text_out);
-                    String message = textView.getText().toString();
-                    sendMessage(message);
-                }
-            }
-        });
-
         // Initialize the BluetoothChatService to perform bluetooth connections
         mChatService = new BluetoothChatService(getActivity(), mHandler);
 
-        // Initialize the buffer for outgoing messages
-        mOutStringBuffer = new StringBuffer("");
+        mStartButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                    mChatService.startIConsole();
+            }
+        });
+
+        mStopButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mChatService.stopIConsole();
+            }
+        });
+
+        mDisconnectButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mChatService.stop();
+            }
+        });
+
+        mStartButton.setEnabled(false);
+        mStopButton.setEnabled(false);
+        mDisconnectButton.setEnabled(false);
     }
 
     /**
@@ -212,32 +214,8 @@ public class BluetoothChatFragment extends Fragment {
             return;
         }
 
-        // Check that there's actually something to send
-        if (message.length() > 0) {
-            // Get the message bytes and tell the BluetoothChatService to write
-            byte[] send = message.getBytes();
-            mChatService.write(send);
-
-            // Reset out string buffer to zero and clear the edit text field
-            mOutStringBuffer.setLength(0);
-            mOutEditText.setText(mOutStringBuffer);
-        }
+        mChatService.startIConsole();
     }
-
-    /**
-     * The action listener for the EditText widget, to listen for the return key
-     */
-    private TextView.OnEditorActionListener mWriteListener
-            = new TextView.OnEditorActionListener() {
-        public boolean onEditorAction(TextView view, int actionId, KeyEvent event) {
-            // If the action is a key-up event on the return key, send the message
-            if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_UP) {
-                String message = view.getText().toString();
-                sendMessage(message);
-            }
-            return true;
-        }
-    };
 
     /**
      * Updates the status on the action bar.
@@ -286,15 +264,31 @@ public class BluetoothChatFragment extends Fragment {
                         case BluetoothChatService.STATE_CONNECTED:
                             setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
                             mConversationArrayAdapter.clear();
+                            mStartButton.setEnabled(true);
+                            mStopButton.setEnabled(true);
+                            mDisconnectButton.setEnabled(true);
                             break;
                         case BluetoothChatService.STATE_CONNECTING:
                             setStatus(R.string.title_connecting);
+                            mStartButton.setEnabled(false);
+                            mStopButton.setEnabled(false);
+                            mDisconnectButton.setEnabled(false);
                             break;
                         case BluetoothChatService.STATE_LISTEN:
                         case BluetoothChatService.STATE_NONE:
                             setStatus(R.string.title_not_connected);
+                            mStartButton.setEnabled(false);
+                            mStopButton.setEnabled(false);
+                            mDisconnectButton.setEnabled(false);
                             break;
                     }
+                    break;
+                case Constants.MESSAGE_DATA:
+                    IConsole.Data data = (IConsole.Data) msg.obj;
+                    String dataMessage = String.format(Locale.US, "Time: %s Speed: %f Power: %f RPM: %d LVL: %d Dist: %f Cal: %d HF: %d",
+                            data.mTime, data.mSpeed10 / 10.0, data.mPower10 / 10.0, data.mRPM,
+                            data.mLevel, data.mDistance10 / 10.0, data.mCalories, data.mHF);
+                    mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + dataMessage);
                     break;
                 case Constants.MESSAGE_WRITE:
                     byte[] writeBuf = (byte[]) msg.obj;

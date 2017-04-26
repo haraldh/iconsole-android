@@ -203,13 +203,12 @@ public class BluetoothChatService {
         updateUserInterfaceTitle();
     }
 
-    /**
-     * Write to the ConnectedThread in an unsynchronized manner
-     *
-     * @param out The bytes to write
-     * @see ConnectedThread#write(byte[])
-     */
-    public void write(byte[] out) {
+    public synchronized boolean startIConsole() {
+        return mConnectedThread.startIConsole();
+    }
+
+    public synchronized boolean stopIConsole() {
+        return mConnectedThread.startIConsole();
     }
 
     /**
@@ -346,8 +345,10 @@ public class BluetoothChatService {
             mmIConsole = new IConsole(mmInStream, mmOutStream, new IConsole.DataListener() {
                 @Override
                 public void onData(IConsole.Data data) {
-                    Log.i(TAG, "mConnectedThread: " + data.toString());
-                    /* print */
+                    Log.i(TAG, "mConnectedThread: onData");
+                    // Share the sent message back to the UI Activity
+                    mHandler.obtainMessage(Constants.MESSAGE_DATA, -1, -1, data)
+                            .sendToTarget();
                 }
 
                 @Override
@@ -361,7 +362,7 @@ public class BluetoothChatService {
                 @Override
                 public void onRead(byte[] buffer) {
                     if (buffer.length > 0) {
-                        String hexbuf = IConsole.byteArrayToHex(Arrays.copyOfRange(buffer, 0, buffer.length)) + '\n';
+                        String hexbuf = IConsole.byteArrayToHex(Arrays.copyOfRange(buffer, 0, buffer.length));
 
                         // Send the obtained bytes to the UI Activity
                         mHandler.obtainMessage(Constants.MESSAGE_READ, hexbuf.length(), -1, hexbuf.getBytes())
@@ -371,7 +372,7 @@ public class BluetoothChatService {
 
                 @Override
                 public void onWrite(byte[] buffer) {
-                    String hexbuf = IConsole.byteArrayToHex(buffer) + '\n';
+                    String hexbuf = IConsole.byteArrayToHex(buffer);
 
                     // Share the sent message back to the UI Activity
                     mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, hexbuf.getBytes())
@@ -383,15 +384,25 @@ public class BluetoothChatService {
         public void run() {
             Log.i(TAG, "BEGIN mConnectedThread");
 
+            mmIConsole.start();
+
             while (mState == STATE_CONNECTED) {
                 if (!mmIConsole.processIO())
                     break;
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    ; // ignore
+                }
             }
         }
+
 
         public boolean setLevel(int level) {
             return mmIConsole.setLevel(level);
         }
+        public boolean startIConsole() { return mmIConsole.start(); }
+        public boolean stopIConsole() { return mmIConsole.stop(); }
 
         public void cancel() {
             mmIConsole.stop();
