@@ -60,6 +60,7 @@ public class MainActivity extends FragmentActivity {
             transaction.commit();
         }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         ComponentName componentName = startService(new Intent(this, BluetoothChatService.class));
         if (componentName == null)
             Log.e(TAG, "componentName == null");
@@ -119,4 +120,11 @@ public class MainActivity extends FragmentActivity {
         Log.i(TAG, "Ready");
     }
     */
+
+    @Override
+    protected void onDestroy() {
+        stopService(new Intent(this, BluetoothChatService.class));
+
+        super.onDestroy();
+    }
 }

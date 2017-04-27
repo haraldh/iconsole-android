@@ -126,7 +126,7 @@ public class BluetoothChatFragment extends Fragment {
             mChatService.stopBT();
         }
         Log.d(TAG, "onDestroy()");
-
+        doUnbindService();
         super.onDestroy();
     }
 
