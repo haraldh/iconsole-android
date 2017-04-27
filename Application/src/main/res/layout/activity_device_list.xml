@@ -23,10 +23,8 @@
         android:id="@+id/title_paired_devices"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#666"
         android:paddingLeft="5dp"
         android:text="@string/title_paired_devices"
-        android:textColor="#fff"
         android:visibility="gone"
         />
 
@@ -42,10 +40,8 @@
         android:id="@+id/title_new_devices"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#666"
         android:paddingLeft="5dp"
         android:text="@string/title_other_devices"
-        android:textColor="#fff"
         android:visibility="gone"
         />
 

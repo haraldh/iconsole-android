@@ -16,13 +16,11 @@
 -->
 
 <resources>
-    <string name="app_name">iConsole</string>
+    <string name="app_name">OpeniConsole</string>
     <string name="intro_message">
         <![CDATA[
-        
-            
+
             This application connects to an iConsole+ mount unit for fitness devices.
-            
         
         ]]>
     </string>

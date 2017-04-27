@@ -94,8 +94,6 @@ public class BluetoothChatService extends Service {
 
         mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
-        // Display a notification about us starting.  We put an icon in the status bar.
-        showNotification();
     }
 
     boolean startIConsole() {
@@ -260,7 +258,7 @@ public class BluetoothChatService extends Service {
         // Start the thread to manage the connection and perform transmissions
         mConnectedThread = new ConnectedThread(socket);
         mConnectedThread.start();
-
+        showNotification();
         // Send the name of the connected device back to the UI Activity
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_NAME);
         Bundle bundle = new Bundle();
