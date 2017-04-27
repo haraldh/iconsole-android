@@ -74,6 +74,7 @@ public class MainActivity extends SampleActivityBase {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        /*
         switch(item.getItemId()) {
             case R.id.menu_toggle_log:
                 mLogShown = !mLogShown;
@@ -86,6 +87,7 @@ public class MainActivity extends SampleActivityBase {
                 supportInvalidateOptionsMenu();
                 return true;
         }
+        */
         return super.onOptionsItemSelected(item);
     }
 

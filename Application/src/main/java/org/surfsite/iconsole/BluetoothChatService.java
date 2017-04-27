@@ -208,7 +208,7 @@ public class BluetoothChatService {
     }
 
     public synchronized boolean stopIConsole() {
-        return mConnectedThread.startIConsole();
+        return mConnectedThread.stopIConsole();
     }
 
     /**
@@ -345,7 +345,7 @@ public class BluetoothChatService {
             mmIConsole = new IConsole(mmInStream, mmOutStream, new IConsole.DataListener() {
                 @Override
                 public void onData(IConsole.Data data) {
-                    Log.i(TAG, "mConnectedThread: onData");
+                    //Log.i(TAG, "mConnectedThread: onData");
                     // Share the sent message back to the UI Activity
                     mHandler.obtainMessage(Constants.MESSAGE_DATA, -1, -1, data)
                             .sendToTarget();
@@ -358,11 +358,11 @@ public class BluetoothChatService {
                     if (e instanceof IOException)
                         connectionLost();
                 }
-            }, new IConsole.DebugListener() {
+            }, /* new IConsole.DebugListener() {
                 @Override
                 public void onRead(byte[] buffer) {
                     if (buffer.length > 0) {
-                        String hexbuf = IConsole.byteArrayToHex(Arrays.copyOfRange(buffer, 0, buffer.length));
+                        String hexbuf = IConsole.byteArrayToHex(buffer);
 
                         // Send the obtained bytes to the UI Activity
                         mHandler.obtainMessage(Constants.MESSAGE_READ, hexbuf.length(), -1, hexbuf.getBytes())
@@ -378,23 +378,24 @@ public class BluetoothChatService {
                     mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, hexbuf.getBytes())
                             .sendToTarget();
                 }
-            });
+            }*/ null);
         }
 
         public void run() {
             Log.i(TAG, "BEGIN mConnectedThread");
 
-            mmIConsole.start();
-
             while (mState == STATE_CONNECTED) {
-                if (!mmIConsole.processIO())
+                if (!mmIConsole.processIO()) {
+                    Log.i(TAG, "processIO = false");
                     break;
+                }
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     ; // ignore
                 }
             }
+            Log.i(TAG, "END mConnectedThread");
         }
 
 

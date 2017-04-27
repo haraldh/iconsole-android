@@ -39,6 +39,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,11 +61,11 @@ public class BluetoothChatFragment extends Fragment {
     private static final int REQUEST_ENABLE_BT = 3;
 
     // Layout Views
-    private ListView mConversationView;
+    //private ListView mConversationView;
     private Button mStartButton;
     private Button mStopButton;
     private Button mDisconnectButton;
-
+    private NumberPicker mLevel;
     /**
      * Name of the connected device
      */
@@ -72,8 +73,8 @@ public class BluetoothChatFragment extends Fragment {
 
     /**
      * Array adapter for the conversation thread
-     */
     private ArrayAdapter<String> mConversationArrayAdapter;
+     */
 
     /**
      * Local Bluetooth adapter
@@ -147,10 +148,16 @@ public class BluetoothChatFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        mConversationView = (ListView) view.findViewById(R.id.in);
+        //mConversationView = (ListView) view.findViewById(R.id.in);
         mStartButton = (Button) view.findViewById(R.id.button_start);
         mStopButton = (Button) view.findViewById(R.id.button_stop);
         mDisconnectButton = (Button) view.findViewById(R.id.button_disconnect);
+        mLevel = (NumberPicker) view.findViewById(R.id.Level);
+        mLevel.setMaxValue(16);
+        mLevel.setMinValue(1);
+        mLevel.setValue(5);
+        mLevel.setWrapSelectorWheel(false);
+        mLevel.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
     }
 
     /**
@@ -158,11 +165,12 @@ public class BluetoothChatFragment extends Fragment {
      */
     private void setupChat() {
         Log.d(TAG, "setupChat()");
-
+/*
         // Initialize the array adapter for the conversation thread
         mConversationArrayAdapter = new ArrayAdapter<>(getActivity(), R.layout.message);
 
         mConversationView.setAdapter(mConversationArrayAdapter);
+*/
 
         // Initialize the BluetoothChatService to perform bluetooth connections
         mChatService = new BluetoothChatService(getActivity(), mHandler);
@@ -263,7 +271,7 @@ public class BluetoothChatFragment extends Fragment {
                     switch (msg.arg1) {
                         case BluetoothChatService.STATE_CONNECTED:
                             setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
-                            mConversationArrayAdapter.clear();
+                            //mConversationArrayAdapter.clear();
                             mStartButton.setEnabled(true);
                             mStopButton.setEnabled(true);
                             mDisconnectButton.setEnabled(true);
@@ -285,22 +293,26 @@ public class BluetoothChatFragment extends Fragment {
                     break;
                 case Constants.MESSAGE_DATA:
                     IConsole.Data data = (IConsole.Data) msg.obj;
-                    String dataMessage = String.format(Locale.US, "Time: %s Speed: %f Power: %f RPM: %d LVL: %d Dist: %f Cal: %d HF: %d",
+                    // FIXME
+                    // insert text here
+                    /*
+                    String dataMessage = String.format(Locale.US, "Time: %d Speed: %3.1f Power: %3.1f RPM: %d LVL: %d Dist: %4.1f Cal: %d HF: %d",
                             data.mTime, data.mSpeed10 / 10.0, data.mPower10 / 10.0, data.mRPM,
                             data.mLevel, data.mDistance10 / 10.0, data.mCalories, data.mHF);
-                    mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + dataMessage);
+                            */
+                    //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + dataMessage);
                     break;
                 case Constants.MESSAGE_WRITE:
-                    byte[] writeBuf = (byte[]) msg.obj;
+                    //byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
-                    String writeMessage = new String(writeBuf);
-                    mConversationArrayAdapter.add("Me:  " + writeMessage);
+                    //String writeMessage = new String(writeBuf);
+                    //mConversationArrayAdapter.add("Me:  " + writeMessage);
                     break;
                 case Constants.MESSAGE_READ:
-                    byte[] readBuf = (byte[]) msg.obj;
+                    //byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
-                    String readMessage = new String(readBuf, 0, msg.arg1);
-                    mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
+                    //String readMessage = new String(readBuf, 0, msg.arg1);
+                    //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name

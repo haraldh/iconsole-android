@@ -39,5 +39,14 @@
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="disconnect">Disconnect</string>
+    <string name="time_n00_00_00">Time\n00:00:00</string>
+    <string name="speed_n0_0_km_h">Speed\n0.0 km/h</string>
+    <string name="rpm_n0">RPM\n0</string>
+    <string name="level_n1">Level\n1</string>
+    <string name="distance_n0_0_km">Distance\n0.0 km</string>
+    <string name="calories_n0_cal">Calories\n0 Cal</string>
+    <string name="heart_n0">Heart\n0</string>
+    <string name="power_n0_0_w">Power\n0.0 W</string>
+    <string name="level">Level</string>
 
 </resources>

@@ -4,13 +4,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.concurrent.TimeoutException;
+import org.surfsite.iconsole.common.logger.Log;
 
 /**
  * Created by harald on 25.04.17.
  */
 
 class IConsole {
+    private static final String TAG = "IConsole";
+
     private static final byte[] PING     = {(byte) 0xf0, (byte) 0xa0, (byte) 0x01, (byte) 0x01, (byte) 0x92 };
     private static final byte[] INIT_A0  = {(byte) 0xf0, (byte) 0xa0, 0x02, 0x02, (byte) 0x94};
     //private static final byte[] PONG     = {(byte) 0xf0, (byte) 0xb0, 0x01, 0x01, (byte) 0xa2};
@@ -126,7 +130,7 @@ class IConsole {
     boolean send(byte[] packet, byte expect, int plen) throws IOException {
         long now = System.currentTimeMillis();
 
-        if ((now - mTimesent) < 200) {
+        if ((now - mTimesent) < ((mCurrentState == State.READ) ? 500 : 200)) {
             return false;
         }
 
@@ -140,11 +144,12 @@ class IConsole {
         // Send packet
         mOutputStream.write(packet);
 
-        if (null != mDataListener)
+        if (null != mDebugListener)
             mDebugListener.onWrite(packet);
+        //Log.d(TAG, "sent: " + byteArrayToHex(packet));
 
         mTimesent = System.currentTimeMillis();
-        mExpectPacket = packet;
+        mExpectPacket = packet.clone();
         mExpectPacket[1] = expect;
         mExpectLen = plen;
         mWaitAck = true;
@@ -172,18 +177,24 @@ class IConsole {
 
         long now = System.currentTimeMillis();
 
-        if ((now - mTimesent) > 1000000) {
+        if ((now - mTimesent) > 10000) {
             mWaitAck = false;
             return null;
         }
 
-        if (mInputStream.available() < mExpectLen)
+        if (mInputStream.available() < mExpectLen) {
+            //Log.d(TAG, String.format(Locale.US, "Avail: %d   Expected: %d", mInputStream.available(), mExpectLen));
             return null;
+        }
 
         bytes = mInputStream.read(buffer);
 
-        if (null != mDebugListener)
+        if (null != mDebugListener) {
             mDebugListener.onRead(Arrays.copyOfRange(buffer, 0, bytes));
+            //Log.d(TAG, "wait ack got: " + byteArrayToHex(Arrays.copyOfRange(buffer, 0, bytes)));
+        }
+
+        //Log.d(TAG, "wait ack checking");
 
         if (bytes != mExpectLen) {
             throw new IOException("Wrong number of bytes read. Expected " + mExpectLen + ", got " + bytes);
@@ -197,13 +208,16 @@ class IConsole {
             throw new IOException("Byte 1 wrong. Expected " + String.format("%02x", mExpectPacket[1]) + ", got " + String.format("%02x", buffer[1]));
         }
 
+        //Log.d(TAG, "wait ack success");
+        mWaitAck = false;
+
         return buffer;
     }
 
     private boolean processIOSend() throws IOException {
         switch (mCurrentState) {
             case BEGIN:
-                mCurrentState = mNextState;
+                send(PING);
                 break;
             case PING:
                 send(PING);
@@ -230,7 +244,7 @@ class IConsole {
                 send(STOP);
                 break;
             case READ:
-                send(READ);
+                send(READ, 21);
                 break;
             case SETLEVEL:
                 send_level(mSetLevel);
@@ -242,8 +256,11 @@ class IConsole {
     private boolean processIOAck() throws IOException, TimeoutException {
         byte[] got = null;
         got = wait_ack();
-        if (null == got)
+        if (null == got) {
             return true;
+        }
+
+        //Log.d(TAG, "processIOAck next state");
 
         if(mCurrentState == State.READ)
             mDataListener.onData(new Data(got));
@@ -288,14 +305,19 @@ class IConsole {
     }
 
     boolean processIO() {
+        //Log.i(TAG, "Begin processIO");
+
         synchronized (this) {
             try {
-                if (! mWaitAck) {
+                if (!mWaitAck) {
+                    //Log.i(TAG, "processIOSend");
                     return processIOSend();
                 } else {
+                    //Log.i(TAG, "processIOAck");
                     return processIOAck();
                 }
             } catch (Exception e) {
+                Log.e(TAG, "processIO", e);
                 mDataListener.onError(e);
                 return false;
             }
