@@ -180,8 +180,6 @@ public class BluetoothChatService extends Service {
     @Override
     public void onDestroy() {
         stopBT();
-        // Cancel the persistent notification.
-        mNM.cancel(NOTIFICATION);
 
         // Tell the user we stopped.
         Log.i(TAG, "onDestroy");
@@ -194,12 +192,11 @@ public class BluetoothChatService extends Service {
     private void showNotification() {
         // In this sample, we'll use the same text for the ticker and the expanded notification
         CharSequence text = getText(R.string.local_service_started);
-        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent myIntent = new Intent(this, MainActivity.class);
         myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         // The PendingIntent to launch our activity if the user selects this notification
-        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0,
-                myIntent, 0);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, myIntent, 0);
 
         // Set the info for the views that show in the notification panel.
         Notification notification = new Notification.Builder(this)
@@ -258,7 +255,6 @@ public class BluetoothChatService extends Service {
         // Start the thread to manage the connection and perform transmissions
         mConnectedThread = new ConnectedThread(socket);
         mConnectedThread.start();
-        showNotification();
         // Send the name of the connected device back to the UI Activity
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_NAME);
         Bundle bundle = new Bundle();
@@ -274,6 +270,8 @@ public class BluetoothChatService extends Service {
      */
     public synchronized void stopBT() {
         Log.d(TAG, "stopBT");
+        // Cancel the persistent notification.
+        mNM.cancel(NOTIFICATION);
 
         if (mConnectThread != null) {
             mConnectThread.cancel();
@@ -462,6 +460,8 @@ public class BluetoothChatService extends Service {
         }
 
         public void run() {
+            showNotification();
+
             Log.i(TAG, "BEGIN mConnectedThread");
 
             while (mState == STATE_CONNECTED) {
@@ -476,6 +476,8 @@ public class BluetoothChatService extends Service {
                 }
             }
             Log.i(TAG, "END mConnectedThread");
+            // Cancel the persistent notification.
+            mNM.cancel(NOTIFICATION);
         }
 
 
@@ -493,6 +495,7 @@ public class BluetoothChatService extends Service {
             } catch (IOException e) {
                 Log.e(TAG, "close() of connect socket failed", e);
             }
+
         }
     }
 }
