@@ -53,7 +53,6 @@ public class BluetoothChatFragment extends Fragment {
 
     // Intent request codes
     private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
-    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
     private static final int REQUEST_ENABLE_BT = 3;
 
     // Layout Views
@@ -159,9 +158,9 @@ public class BluetoothChatFragment extends Fragment {
         mStopButton = (Button) view.findViewById(R.id.button_stop);
         mDisconnectButton = (Button) view.findViewById(R.id.button_disconnect);
         mLevel = (NumberPicker) view.findViewById(R.id.Level);
-        mLevel.setMaxValue(16);
+        mLevel.setMaxValue(32);
         mLevel.setMinValue(1);
-        mLevel.setValue(5);
+        mLevel.setValue(1);
         mLevel.setWrapSelectorWheel(false);
         mLevel.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         mSpeedText = (TextView) view.findViewById(R.id.Speed);
@@ -411,12 +410,6 @@ public class BluetoothChatFragment extends Fragment {
                     connectDevice(data, true);
                 }
                 break;
-            case REQUEST_CONNECT_DEVICE_INSECURE:
-                // When DeviceListActivity returns with a device to connect
-                if (resultCode == Activity.RESULT_OK) {
-                    connectDevice(data, false);
-                }
-                break;
             case REQUEST_ENABLE_BT:
                 // When the request to enable Bluetooth returns
                 if (resultCode == Activity.RESULT_OK) {
@@ -461,17 +454,6 @@ public class BluetoothChatFragment extends Fragment {
                 // Launch the DeviceListActivity to see devices and do scan
                 Intent serverIntent = new Intent(getActivity(), DeviceListActivity.class);
                 startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
-                return true;
-            }
-            case R.id.insecure_connect_scan: {
-                // Launch the DeviceListActivity to see devices and do scan
-                Intent serverIntent = new Intent(getActivity(), DeviceListActivity.class);
-                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_INSECURE);
-                return true;
-            }
-            case R.id.discoverable: {
-                // Ensure this device is discoverable by others
-                ensureDiscoverable();
                 return true;
             }
         }
