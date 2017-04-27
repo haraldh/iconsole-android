@@ -144,6 +144,7 @@ class IConsole {
                 return false;
 
             this.mNextState = State.SETLEVEL;
+            Log.d(TAG, String.format("Set Level to %d", level));
             this.mSetLevel = level;
         }
         return true;
@@ -191,6 +192,7 @@ class IConsole {
         byte[] packet = SETLEVEL.clone();
         packet[4] = (byte) (packet[4] + level);
         packet[5] = (byte) ((packet[5] + level) & 0xFF);
+        //Log.d(TAG, "send_level");
         return send(packet);
     }
 

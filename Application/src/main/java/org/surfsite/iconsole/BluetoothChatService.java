@@ -481,9 +481,7 @@ public class BluetoothChatService extends Service {
         }
 
 
-        public boolean setLevel(int level) {
-            return mmIConsole.setLevel(level);
-        }
+        public boolean setLevel(int level) { return mmIConsole.setLevel(level); }
         public boolean startIConsole() { return mmIConsole.start(); }
         public boolean stopIConsole() { return mmIConsole.stop(); }
 

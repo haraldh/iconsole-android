@@ -225,6 +225,7 @@ public class BluetoothChatFragment extends Fragment {
         mStartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mLevel.setValue(1);
                 if (mChatService != null)
                     mChatService.startIConsole();
             }
@@ -233,6 +234,7 @@ public class BluetoothChatFragment extends Fragment {
         mStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mLevel.setValue(1);
                 if (mChatService != null)
                     mChatService.stopIConsole();
             }
@@ -241,6 +243,7 @@ public class BluetoothChatFragment extends Fragment {
         mDisconnectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mLevel.setValue(1);
                 if (mChatService != null)
                     mChatService.stopBT();
             }
@@ -250,11 +253,15 @@ public class BluetoothChatFragment extends Fragment {
         mStopButton.setEnabled(false);
         mDisconnectButton.setEnabled(false);
         mLevel.setEnabled(false);
-        mLevel.setOnClickListener(new View.OnClickListener() {
+        mLevel.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
-            public void onClick(View v) {
-                if (mChatService != null)
-                    mChatService.setLevel(mLevel.getValue());
+            public void onValueChange(NumberPicker p, int oldval, int newval) {
+                //Log.e(TAG, "setLevel");
+                if (mChatService != null) {
+                    if (!mChatService.setLevel(newval))
+                        Log.e(TAG, "setLevel failed");
+
+                }
             }
         });
     }
@@ -341,6 +348,7 @@ public class BluetoothChatFragment extends Fragment {
                             mStopButton.setEnabled(true);
                             mDisconnectButton.setEnabled(true);
                             mLevel.setEnabled(true);
+                            mLevel.setValue(1);
                             break;
                         case BluetoothChatService.STATE_CONNECTING:
                             setStatus(R.string.title_connecting);
@@ -363,14 +371,14 @@ public class BluetoothChatFragment extends Fragment {
                     if (!(msg.obj instanceof IConsole.Data))
                         return;
                     IConsole.Data data = (IConsole.Data) msg.obj;
-                    mSpeedText.setText(String.format("Speed\n% 3.1f", data.mSpeed10 / 10.0));
-                    mPowerText.setText(String.format("Power\n% 3.1f", data.mPower10 / 10.0));
-                    mRPMText.setText(String.format("RPM\n%d", data.mRPM));
-                    mDistanceText.setText(String.format("Distance\n% 3.1f", data.mDistance10 / 10.0));
-                    mCaloriesText.setText(String.format("Calories\n% 3.1f", data.mSpeed10 / 10.0));
-                    mHFText.setText(String.format("Heart\n%d", data.mHF));
-                    mTimeText.setText(String.format("Time:\n%s",data.getTimeStr()));
-                    mLevel.setValue(data.mLevel);
+                    mSpeedText.setText(String.format("% 3.1f", data.mSpeed10 / 10.0));
+                    mPowerText.setText(String.format("% 3.1f", data.mPower10 / 10.0));
+                    mRPMText.setText(String.format("%d", data.mRPM));
+                    mDistanceText.setText(String.format("% 3.1f", data.mDistance10 / 10.0));
+                    mCaloriesText.setText(String.format("% 3d", data.mCalories));
+                    mHFText.setText(String.format("%d", data.mHF));
+                    mTimeText.setText(String.format("%s",data.getTimeStr()));
+                    //mLevel.setValue(data.mLevel);
                     break;
                 case Constants.MESSAGE_WRITE:
                     //byte[] writeBuf = (byte[]) msg.obj;
