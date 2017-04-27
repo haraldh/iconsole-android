@@ -21,27 +21,8 @@
       android:id="@+id/sample_main_layout">
 
     <FrameLayout
-          android:id="@+id/sample_output"
-          android:layout_width="match_parent"
-          android:layout_height="0px"
-          android:layout_weight="1">
-
-        <fragment
-              android:name="org.surfsite.iconsole.common.logger.LogFragment"
-              android:id="@+id/log_fragment"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent" />
-
-    </FrameLayout>
-
-    <View
-          android:layout_width="match_parent"
-          android:layout_height="1dp"
-          android:background="@android:color/darker_gray" />
-
-    <FrameLayout
           android:id="@+id/sample_content_fragment"
-          android:layout_weight="2"
+          android:layout_weight="4"
           android:layout_width="match_parent"
           android:layout_height="0px" />
 

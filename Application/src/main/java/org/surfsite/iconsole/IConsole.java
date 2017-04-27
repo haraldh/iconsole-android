@@ -1,12 +1,14 @@
 package org.surfsite.iconsole;
 
+import android.support.annotation.Nullable;
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.concurrent.TimeoutException;
-import org.surfsite.iconsole.common.logger.Log;
 
 /**
  * Created by harald on 25.04.17.
@@ -52,7 +54,8 @@ class IConsole {
     private final DataListener mDataListener;
     private final DebugListener mDebugListener;
 
-    IConsole(InputStream inputStream, OutputStream outputStream, DataListener dataListener, DebugListener debugListener) {
+    IConsole(InputStream inputStream, OutputStream outputStream,
+             @Nullable DataListener dataListener, @Nullable DebugListener debugListener) {
         this.mInputStream = inputStream;
         this.mOutputStream = outputStream;
         this.mDataListener = dataListener;
@@ -90,6 +93,25 @@ class IConsole {
             this.mPower10    = 100 * (bytes[16] - 1) + bytes[17] - 1;
             this.mLevel      = bytes[18] -1;
         }
+
+        String getTimeStr() {
+            long day, hour, min, sec;
+            StringBuilder b = new StringBuilder();
+            day = mTime / 60 / 60 / 24;
+            if (day > 0)
+                b.append(String.format(Locale.US, "%02d:", day));
+            hour = (mTime % (60 * 60 * 24)) / 60 / 60;
+            if (hour > 0)
+                if (day > 0)
+                    b.append(String.format(Locale.US, "%02d:", hour));
+                else
+                    b.append(String.format(Locale.US, "%d:", hour));
+            min = (mTime % (60 * 60)) / 60;
+            sec = mTime % 60;
+            b.append(String.format(Locale.US, "%02d:%02d", min, sec));
+            return b.toString();
+        }
+
     }
 
     interface DataListener {
@@ -127,7 +149,7 @@ class IConsole {
         return true;
     }
 
-    boolean send(byte[] packet, byte expect, int plen) throws IOException {
+    private boolean send(byte[] packet, byte expect, int plen) throws IOException {
         long now = System.currentTimeMillis();
 
         if ((now - mTimesent) < ((mCurrentState == State.READ) ? 500 : 200)) {
@@ -136,6 +158,7 @@ class IConsole {
 
         // Flush input stream
         try {
+            //noinspection ResultOfMethodCallIgnored
             mInputStream.skip(mInputStream.available());
         } catch (IOException e) {
             ; // ignore
@@ -263,7 +286,8 @@ class IConsole {
         //Log.d(TAG, "processIOAck next state");
 
         if(mCurrentState == State.READ)
-            mDataListener.onData(new Data(got));
+            if (null != mDataListener)
+                mDataListener.onData(new Data(got));
 
         mCurrentState = mNextState;
         switch (mNextState) {
@@ -318,7 +342,8 @@ class IConsole {
                 }
             } catch (Exception e) {
                 Log.e(TAG, "processIO", e);
-                mDataListener.onError(e);
+                if (null != mDataListener)
+                    mDataListener.onError(e);
                 return false;
             }
         }

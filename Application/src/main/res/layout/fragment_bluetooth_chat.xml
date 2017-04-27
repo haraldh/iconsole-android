@@ -23,146 +23,271 @@
     tools:layout_editor_absoluteX="0dp" >
 
     <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RPM"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/RPM"
+        app:layout_constraintRight_toLeftOf="@+id/guideline"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline3"
+        app:layout_constraintTop_toTopOf="@+id/guideline6"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Calories"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/Calories"
+        app:layout_constraintRight_toLeftOf="@+id/guideline3"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline6"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Heart"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/Heart"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline3"
+        app:layout_constraintRight_toLeftOf="@+id/guideline"
+        android:layout_marginRight="16dp"
+        app:layout_constraintTop_toTopOf="@+id/guideline4"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Distance"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/Distance"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline3"
+        app:layout_constraintRight_toLeftOf="@+id/guideline"
+        android:layout_marginRight="16dp"
+        app:layout_constraintTop_toTopOf="@+id/guideline5"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Speed"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/Speed"
+        app:layout_constraintRight_toLeftOf="@+id/guideline3"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline4"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Power"
+        app:layout_constraintBottom_toTopOf="@+id/Power"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/guideline3"
+        app:layout_constraintTop_toTopOf="@+id/guideline5"
+        app:layout_constraintVertical_bias="0.333" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Time"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        app:layout_constraintBottom_toTopOf="@+id/Time"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <NumberPicker
+        android:id="@+id/Level"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline4"
+        app:layout_constraintHorizontal_bias="0.484"
+        app:layout_constraintVertical_bias="0.671" />
+
+    <TextView
         android:id="@+id/Time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginTop="16dp"
+        android:fontFamily="monospace"
         android:gravity="center"
         android:text="@string/time_n00_00_00"
         android:textAlignment="center"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline5"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.513"
-        android:layout_marginRight="16dp"
-        app:layout_constraintRight_toRightOf="parent" />
-
-    <NumberPicker
-        android:id="@+id/Level"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginStart="16dp"
-        app:layout_constraintLeft_toLeftOf="@+id/guideline"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/guideline4"
-        android:layout_marginTop="16dp" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/Speed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginTop="16dp"
+        android:fontFamily="monospace"
         android:gravity="center"
         android:text="@string/speed_n0_0_km_h"
         android:textAlignment="center"
-        app:layout_constraintTop_toTopOf="@+id/guideline4"
-        android:layout_marginBottom="16dp"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideline6"
-        android:layout_marginLeft="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/guideline3"
-        android:layout_marginRight="16dp" />
-
-        <TextView
-            android:id="@+id/Power"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/power_n0_0_w"
-            android:textAlignment="center"
-            android:gravity="center"
-            app:layout_constraintRight_toLeftOf="@+id/guideline3"
-            app:layout_constraintTop_toTopOf="@+id/guideline5"
-            android:layout_marginLeft="16dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/guideline4" />
-
-        <TextView
-            android:id="@+id/RPM"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:text="@string/rpm_n0"
-            android:textAlignment="center"
-            android:gravity="center"
-            app:layout_constraintTop_toTopOf="@+id/guideline6"
-            android:layout_marginTop="16dp"
-            android:layout_marginLeft="16dp"
-            app:layout_constraintLeft_toLeftOf="@+id/guideline3"
-            app:layout_constraintRight_toLeftOf="@+id/guideline"
-            android:layout_marginRight="16dp"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/guideline2" />
+        app:layout_constraintTop_toTopOf="@+id/guideline4" />
 
     <TextView
-            android:id="@+id/Distance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:text="@string/distance_n0_0_km"
-            android:textAlignment="center"
-            android:gravity="center"
-            app:layout_constraintTop_toTopOf="@+id/guideline5"
-            android:layout_marginTop="16dp"
-            android:layout_marginLeft="16dp"
-            app:layout_constraintLeft_toLeftOf="@+id/guideline3"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/guideline4"
-            app:layout_constraintVertical_bias="0.538"
-            app:layout_constraintRight_toLeftOf="@+id/guideline"
-            android:layout_marginRight="16dp" />
+        android:id="@+id/Power"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:text="@string/power_n0_0_w"
+        android:textAlignment="center"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline4"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/guideline3"
+        app:layout_constraintTop_toTopOf="@+id/guideline5" />
 
-        <TextView
-            android:id="@+id/Calories"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/calories_n0_cal"
-            android:textAlignment="center"
-            android:gravity="center"
-            app:layout_constraintRight_toLeftOf="@+id/guideline3"
-            app:layout_constraintTop_toTopOf="@+id/guideline6"
-            android:layout_marginLeft="16dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintHorizontal_bias="0.507"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/guideline2" />
+    <TextView
+        android:id="@+id/RPM"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:text="@string/rpm_n0"
+        android:textAlignment="center"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline3"
+        app:layout_constraintRight_toLeftOf="@+id/guideline"
+        app:layout_constraintTop_toTopOf="@+id/guideline6" />
 
-        <TextView
-            android:id="@+id/Heart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:text="@string/heart_n0"
-            android:textAlignment="center"
-            android:gravity="center"
-            android:layout_marginLeft="16dp"
-            app:layout_constraintLeft_toLeftOf="@+id/guideline3"
-            app:layout_constraintTop_toTopOf="@+id/guideline4"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/guideline6"
-            app:layout_constraintVertical_bias="0.461"
-            app:layout_constraintRight_toLeftOf="@+id/guideline"
-            android:layout_marginRight="16dp" />
+    <TextView
+        android:id="@+id/Distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:text="@string/distance_n0_0_km"
+        android:textAlignment="center"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline4"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline3"
+        app:layout_constraintRight_toLeftOf="@+id/guideline"
+        app:layout_constraintTop_toTopOf="@+id/guideline5"
+        app:layout_constraintVertical_bias="0.538" />
+
+    <TextView
+        android:id="@+id/Calories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:text="@string/calories_n0_cal"
+        android:textAlignment="center"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintHorizontal_bias="0.507"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/guideline3"
+        app:layout_constraintTop_toTopOf="@+id/guideline6" />
+
+    <TextView
+        android:id="@+id/Heart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:text="@string/heart_n0"
+        android:textAlignment="center"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/guideline6"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline3"
+        app:layout_constraintRight_toLeftOf="@+id/guideline"
+        app:layout_constraintTop_toTopOf="@+id/guideline4"
+        app:layout_constraintVertical_bias="0.461" />
 
         <android.support.constraint.Guideline
             android:layout_width="wrap_content"
@@ -235,58 +360,58 @@
             tools:layout_editor_absoluteX="0dp" />
 
 
-        <LinearLayout
-            android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline2">
+
+        <Space
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintTop_toTopOf="@+id/guideline2"
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="16dp"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_marginLeft="16dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp">
+            android:layout_weight="1" />
 
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+        <Button
+            android:id="@+id/button_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start" />
 
-            <Button
-                android:id="@+id/button_start"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/start" />
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+        <Button
+            android:id="@+id/button_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/stop" />
 
-            <Button
-                android:id="@+id/button_stop"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/stop" />
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="4" />
 
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+        <Button
+            android:id="@+id/button_disconnect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/disconnect" />
 
-            <Button
-                android:id="@+id/button_disconnect"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/disconnect" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-        </LinearLayout>
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

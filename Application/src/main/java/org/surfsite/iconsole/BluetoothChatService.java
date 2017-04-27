@@ -16,20 +16,26 @@
 
 package org.surfsite.iconsole;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 
-import org.surfsite.iconsole.common.logger.Log;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -38,7 +44,7 @@ import java.util.UUID;
  * incoming connections, a thread for connecting with a device, and a
  * thread for performing data transmissions when connected.
  */
-public class BluetoothChatService {
+public class BluetoothChatService extends Service {
     // Debugging
     private static final String TAG = "BluetoothChatService";
     // Name for the SDP record when creating server socket
@@ -49,7 +55,7 @@ public class BluetoothChatService {
     private static final UUID SERIAL_PORT_CLASS = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
     // Member fields
     private final BluetoothAdapter mAdapter;
-    private final Handler mHandler;
+    private Handler mHandler;
 
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
@@ -61,60 +67,47 @@ public class BluetoothChatService {
     public static final int STATE_LISTEN = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
+    private NotificationManager mNM;
 
-    /**
-     * Constructor. Prepares a new BluetoothChat session.
-     *
-     * @param context The UI Activity Context
-     * @param handler A Handler to send messages back to the UI Activity
-     */
-    public BluetoothChatService(Context context, Handler handler) {
+    private int NOTIFICATION = R.string.local_service_started;
+
+    public BluetoothChatService() {
+        super();
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
         mNewState = mState;
-        mHandler = handler;
     }
 
 
-    /**
-     * Update UI title according to the current state of the chat connection
-     */
-    private synchronized void updateUserInterfaceTitle() {
-        mState = getState();
-        Log.d(TAG, "updateUserInterfaceTitle() " + mNewState + " -> " + mState);
-        mNewState = mState;
-
-        // Give the new state to the Handler so the UI Activity can update
-        mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, mNewState, -1).sendToTarget();
-    }
-
-    /**
-     * Return the current connection state.
-     */
-    public synchronized int getState() {
-        return mState;
-    }
-
-    /**
-     * Start the chat service. Specifically start AcceptThread to begin a
-     * session in listening (server) mode. Called by the Activity onResume()
-     */
-    public synchronized void start() {
-        Log.d(TAG, "start");
-
-        // Cancel any thread attempting to make a connection
-        if (mConnectThread != null) {
-            mConnectThread.cancel();
-            mConnectThread = null;
+    public class BluetoothChatServiceI extends Binder {
+        BluetoothChatService getService() {
+            return BluetoothChatService.this;
         }
-
-        // Cancel any thread currently running a connection
-        if (mConnectedThread != null) {
-            mConnectedThread.cancel();
-            mConnectedThread = null;
+        void setHandler(Handler handler) {
+            mHandler = handler;
         }
-        // Update UI title
-        updateUserInterfaceTitle();
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+
+        // Display a notification about us starting.  We put an icon in the status bar.
+        showNotification();
+    }
+
+    boolean startIConsole() {
+        return mConnectedThread.startIConsole();
+    }
+
+    boolean stopIConsole() {
+        return mConnectedThread.stopIConsole();
+    }
+
+    boolean setLevel(int level) {
+        return mConnectedThread.setLevel(level);
     }
 
     /**
@@ -142,6 +135,100 @@ public class BluetoothChatService {
         // Start the thread to connect with the given device
         mConnectThread = new ConnectThread(device);
         mConnectThread.start();
+        // Update UI title
+        updateUserInterfaceTitle();
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.i(TAG, "onBind");
+
+        return mBinder;
+    }
+
+
+    // This is the object that receives interactions from clients.  See
+    // RemoteService for a more complete example.
+    private final IBinder mBinder = new BluetoothChatServiceI();
+
+    /**
+     * Update UI title according to the current state of the chat connection
+     */
+    private synchronized void updateUserInterfaceTitle() {
+        mState = getState();
+        Log.d(TAG, "updateUserInterfaceTitle() " + mNewState + " -> " + mState);
+        mNewState = mState;
+
+        // Give the new state to the Handler so the UI Activity can update
+        mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, mNewState, -1).sendToTarget();
+    }
+
+    /**
+     * Return the current connection state.
+     */
+    public synchronized int getState() {
+        return mState;
+    }
+
+    /**
+     * Start the chat service. Specifically startBT AcceptThread to begin a
+     * session in listening (server) mode. Called by the Activity onResume()
+     */
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG, "Received onStartCommand() id " + startId + ": " + intent);
+        return START_NOT_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        stopBT();
+        // Cancel the persistent notification.
+        mNM.cancel(NOTIFICATION);
+
+        // Tell the user we stopped.
+        Log.i(TAG, "onDestroy");
+        super.onDestroy();
+
+    }
+    /**
+     * Show a notification while this service is running.
+     */
+    private void showNotification() {
+        // In this sample, we'll use the same text for the ticker and the expanded notification
+        CharSequence text = getText(R.string.local_service_started);
+
+        // The PendingIntent to launch our activity if the user selects this notification
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, MainActivity.class), 0);
+
+        // Set the info for the views that show in the notification panel.
+        Notification notification = new Notification.Builder(this)
+                .setSmallIcon(R.drawable.ic_action_device_access_bluetooth_searching)  // the status icon
+                .setTicker(text)  // the status text
+                .setWhen(System.currentTimeMillis())  // the time stamp
+                .setContentTitle(getText(R.string.local_service_label))  // the label of the entry
+                .setContentText(text)  // the contents of the entry
+                .setContentIntent(contentIntent)  // The intent to send when the entry is clicked
+                .build();
+
+        // Send the notification.
+        mNM.notify(NOTIFICATION, notification);
+    }
+
+    void startBT() {
+        Log.d(TAG, "startBT");
+
+        // Cancel any thread attempting to make a connection
+        if (mConnectThread != null) {
+            mConnectThread.cancel();
+            mConnectThread = null;
+        }
+
+        // Cancel any thread currently running a connection
+        if (mConnectedThread != null) {
+            mConnectedThread.cancel();
+            mConnectedThread = null;
+        }
         // Update UI title
         updateUserInterfaceTitle();
     }
@@ -185,8 +272,8 @@ public class BluetoothChatService {
     /**
      * Stop all threads
      */
-    public synchronized void stop() {
-        Log.d(TAG, "stop");
+    public synchronized void stopBT() {
+        Log.d(TAG, "stopBT");
 
         if (mConnectThread != null) {
             mConnectThread.cancel();
@@ -203,13 +290,6 @@ public class BluetoothChatService {
         updateUserInterfaceTitle();
     }
 
-    public synchronized boolean startIConsole() {
-        return mConnectedThread.startIConsole();
-    }
-
-    public synchronized boolean stopIConsole() {
-        return mConnectedThread.stopIConsole();
-    }
 
     /**
      * Indicate that the connection attempt failed and notify the UI Activity.
@@ -227,7 +307,7 @@ public class BluetoothChatService {
         updateUserInterfaceTitle();
 
         // Start the service over to restart listening mode
-        BluetoothChatService.this.start();
+        BluetoothChatService.this.startBT();
     }
 
     /**
@@ -246,7 +326,7 @@ public class BluetoothChatService {
         updateUserInterfaceTitle();
 
         // Start the service over to restart listening mode
-        BluetoothChatService.this.start();
+        BluetoothChatService.this.startBT();
     }
 
     /**
@@ -254,7 +334,7 @@ public class BluetoothChatService {
      * with a device. It runs straight through; the connection either
      * succeeds or fails.
      */
-    private class ConnectThread extends Thread {
+     class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
 
@@ -318,7 +398,7 @@ public class BluetoothChatService {
      * This thread runs during a connection with a remote device.
      * It handles all incoming and outgoing transmissions.
      */
-    private class ConnectedThread extends Thread {
+    class ConnectedThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;

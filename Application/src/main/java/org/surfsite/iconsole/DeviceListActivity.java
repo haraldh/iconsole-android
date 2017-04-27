@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -33,7 +34,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.surfsite.iconsole.R;
-import org.surfsite.iconsole.common.logger.Log;
 
 import java.util.Set;
 
@@ -153,7 +153,7 @@ public class DeviceListActivity extends Activity {
         // Turn on sub-title for new devices
         findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
 
-        // If we're already discovering, stop it
+        // If we're already discovering, stopBT it
         if (mBtAdapter.isDiscovering()) {
             mBtAdapter.cancelDiscovery();
         }

@@ -16,37 +16,33 @@
 
 package org.surfsite.iconsole;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.surfsite.iconsole.R;
-import org.surfsite.iconsole.common.logger.Log;
-
-import java.util.Locale;
+import android.util.Log;
 
 /**
  * This fragment controls Bluetooth to communicate with other devices.
@@ -66,6 +62,13 @@ public class BluetoothChatFragment extends Fragment {
     private Button mStopButton;
     private Button mDisconnectButton;
     private NumberPicker mLevel;
+    private TextView mSpeedText;
+    private TextView mPowerText;
+    private TextView mRPMText;
+    private TextView mDistanceText;
+    private TextView mCaloriesText;
+    private TextView mHFText;
+    private TextView mTimeText;
     /**
      * Name of the connected device
      */
@@ -85,6 +88,7 @@ public class BluetoothChatFragment extends Fragment {
      * Member object for the chat services
      */
     private BluetoothChatService mChatService = null;
+    private boolean mIsBound;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,10 +122,12 @@ public class BluetoothChatFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         if (mChatService != null) {
-            mChatService.stop();
+            mChatService.stopBT();
         }
+        Log.d(TAG, "onDestroy()");
+
+        super.onDestroy();
     }
 
     @Override
@@ -135,7 +141,7 @@ public class BluetoothChatFragment extends Fragment {
             // Only if the state is STATE_NONE, do we know that we haven't started already
             if (mChatService.getState() == BluetoothChatService.STATE_NONE) {
                 // Start the Bluetooth chat services
-                mChatService.start();
+                mChatService.startBT();
             }
         }
     }
@@ -158,6 +164,54 @@ public class BluetoothChatFragment extends Fragment {
         mLevel.setValue(5);
         mLevel.setWrapSelectorWheel(false);
         mLevel.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        mSpeedText = (TextView) view.findViewById(R.id.Speed);
+        mPowerText = (TextView) view.findViewById(R.id.Power);
+        mRPMText = (TextView) view.findViewById(R.id.RPM);
+        mDistanceText = (TextView) view.findViewById(R.id.Distance);
+        mCaloriesText = (TextView) view.findViewById(R.id.Calories);
+        mHFText = (TextView) view.findViewById(R.id.Heart);
+        mTimeText = (TextView) view.findViewById(R.id.Time);
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // This is called when the connection with the service has been
+            // established, giving us the service object we can use to
+            // interact with the service.  Because we have bound to a explicit
+            // service that we know is running in our own process, we can
+            // cast its IBinder to a concrete class and directly access it.
+            mChatService = ((BluetoothChatService.BluetoothChatServiceI)service).getService();
+            ((BluetoothChatService.BluetoothChatServiceI)service).setHandler(mHandler);
+            Log.d(TAG, "onServiceConnected()");
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            // Because it is running in our same process, we should never
+            // see this happen.
+            mChatService = null;
+
+        }
+    };
+
+    void doBindService() {
+        Log.d(TAG, "doBindService()");
+
+        // Establish a connection with the service.  We use an explicit
+        // class name because we want a specific service implementation that
+        // we know will be running in our own process (and thus won't be
+        // supporting component replacement by other applications).
+        getActivity().bindService(new Intent(getActivity(), BluetoothChatService.class), mConnection , Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+    }
+
+    void doUnbindService() {
+        if (mIsBound) {
+            // Detach our existing connection.
+            getActivity().unbindService(mConnection);
+            mIsBound = false;
+        }
     }
 
     /**
@@ -165,37 +219,45 @@ public class BluetoothChatFragment extends Fragment {
      */
     private void setupChat() {
         Log.d(TAG, "setupChat()");
-/*
-        // Initialize the array adapter for the conversation thread
-        mConversationArrayAdapter = new ArrayAdapter<>(getActivity(), R.layout.message);
 
-        mConversationView.setAdapter(mConversationArrayAdapter);
-*/
-
-        // Initialize the BluetoothChatService to perform bluetooth connections
-        mChatService = new BluetoothChatService(getActivity(), mHandler);
+        if (!mIsBound)
+            doBindService();
 
         mStartButton.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
+                if (mChatService != null)
                     mChatService.startIConsole();
             }
         });
 
         mStopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
-                mChatService.stopIConsole();
+                if (mChatService != null)
+                    mChatService.stopIConsole();
             }
         });
 
         mDisconnectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
-                mChatService.stop();
+                if (mChatService != null)
+                    mChatService.stopBT();
             }
         });
 
         mStartButton.setEnabled(false);
         mStopButton.setEnabled(false);
         mDisconnectButton.setEnabled(false);
+        mLevel.setEnabled(false);
+        mLevel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mChatService != null)
+                    mChatService.setLevel(mLevel.getValue());
+            }
+        });
     }
 
     /**
@@ -216,7 +278,10 @@ public class BluetoothChatFragment extends Fragment {
      * @param message A string of text to send.
      */
     private void sendMessage(String message) {
-        // Check that we're actually connected before trying anything
+        if (mChatService == null)
+            return;
+
+            // Check that we're actually connected before trying anything
         if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
             Toast.makeText(getActivity(), R.string.not_connected, Toast.LENGTH_SHORT).show();
             return;
@@ -263,6 +328,7 @@ public class BluetoothChatFragment extends Fragment {
      * The Handler that gets information back from the BluetoothChatService
      */
     private final Handler mHandler = new Handler() {
+        @SuppressLint("DefaultLocale")
         @Override
         public void handleMessage(Message msg) {
             FragmentActivity activity = getActivity();
@@ -275,12 +341,14 @@ public class BluetoothChatFragment extends Fragment {
                             mStartButton.setEnabled(true);
                             mStopButton.setEnabled(true);
                             mDisconnectButton.setEnabled(true);
+                            mLevel.setEnabled(true);
                             break;
                         case BluetoothChatService.STATE_CONNECTING:
                             setStatus(R.string.title_connecting);
                             mStartButton.setEnabled(false);
                             mStopButton.setEnabled(false);
                             mDisconnectButton.setEnabled(false);
+                            mLevel.setEnabled(false);
                             break;
                         case BluetoothChatService.STATE_LISTEN:
                         case BluetoothChatService.STATE_NONE:
@@ -288,19 +356,22 @@ public class BluetoothChatFragment extends Fragment {
                             mStartButton.setEnabled(false);
                             mStopButton.setEnabled(false);
                             mDisconnectButton.setEnabled(false);
+                            mLevel.setEnabled(false);
                             break;
                     }
                     break;
                 case Constants.MESSAGE_DATA:
+                    if (!(msg.obj instanceof IConsole.Data))
+                        return;
                     IConsole.Data data = (IConsole.Data) msg.obj;
-                    // FIXME
-                    // insert text here
-                    /*
-                    String dataMessage = String.format(Locale.US, "Time: %d Speed: %3.1f Power: %3.1f RPM: %d LVL: %d Dist: %4.1f Cal: %d HF: %d",
-                            data.mTime, data.mSpeed10 / 10.0, data.mPower10 / 10.0, data.mRPM,
-                            data.mLevel, data.mDistance10 / 10.0, data.mCalories, data.mHF);
-                            */
-                    //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + dataMessage);
+                    mSpeedText.setText(String.format("Speed\n% 3.1f", data.mSpeed10 / 10.0));
+                    mPowerText.setText(String.format("Power\n% 3.1f", data.mPower10 / 10.0));
+                    mRPMText.setText(String.format("RPM\n%d", data.mRPM));
+                    mDistanceText.setText(String.format("Distance\n% 3.1f", data.mDistance10 / 10.0));
+                    mCaloriesText.setText(String.format("Calories\n% 3.1f", data.mSpeed10 / 10.0));
+                    mHFText.setText(String.format("Heart\n%d", data.mHF));
+                    mTimeText.setText(String.format("Time:\n%s",data.getTimeStr()));
+                    mLevel.setValue(data.mLevel);
                     break;
                 case Constants.MESSAGE_WRITE:
                     //byte[] writeBuf = (byte[]) msg.obj;
@@ -374,7 +445,8 @@ public class BluetoothChatFragment extends Fragment {
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         // Attempt to connect to the device
-        mChatService.connect(device);
+        if (mChatService != null)
+            mChatService.connect(device);
     }
 
     @Override
