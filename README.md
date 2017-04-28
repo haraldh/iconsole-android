@@ -2,7 +2,7 @@
 # OpeniConsole
 
 ## Description
-OpeniConsole connects to an iConsole+ fitness bike head unit.
+OpeniConsole connects to an iConsole+ fitness bike head unit over bluetooth.
 
 You can set the resistance level and all data is displayed.
 
