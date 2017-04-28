@@ -16,3 +16,13 @@ Google Play Store [beta testing](https://play.google.com/apps/testing/org.surfsi
 ## Screenshot
 ![Screenshot](https://lh3.googleusercontent.com/NbWXiGBWr4gPKQNZ24nyYqIXg0RNkXy7G0L99ryr-SB0kqK-0SL3PGehkg_-3oAjg2s=h310 "Screenshot")
 
+## Development
+Contribute via pull requests. If you want to do major contributions, drop me a message and I will create a development group.
+
+### TODO/Ideas
+- workout recording to FIT/TCX/GPX
+- workout profiles
+- Google street view cycling
+- sensor data broadcasting via ANT
+
+See also my [python prototype](https://github.com/haraldh/iconsole) for the bluetooth protocol reverse engineering and sensor broadcasting.
