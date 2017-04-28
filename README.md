@@ -1,5 +1,6 @@
 
 # OpeniConsole
+![Logo](https://raw.githubusercontent.com/haraldh/iconsole-android/master/Application/src/main/res/drawable-xxhdpi/ic_launcher.png)
 
 ## Description
 OpeniConsole connects to an iConsole+ fitness bike head unit over bluetooth.
