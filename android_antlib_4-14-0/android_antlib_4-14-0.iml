@@ -21,6 +21,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="android_antlib_4-14-0.android_antlib_4-14-0" level="project" />
+   <orderEntry type="library" exported="" name="android_antlib_4-14-0.android_antlib_4-14-0" level="project" />
+
   </component>
 </module>
