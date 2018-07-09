@@ -23,14 +23,12 @@ import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-
 import android.util.Log;
 
 import java.io.IOException;
@@ -45,31 +43,31 @@ import java.util.UUID;
  * thread for performing data transmissions when connected.
  */
 public class BluetoothChatService extends Service {
-    // Debugging
-    private static final String TAG = "BluetoothChatService";
-    // Name for the SDP record when creating server socket
-    private static final String NAME_SECURE = "BluetoothChatSecure";
-    private static final String NAME_INSECURE = "BluetoothChatInsecure";
-
-    // Unique UUID for this application
-    private static final UUID SERIAL_PORT_CLASS = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-    // Member fields
-    private final BluetoothAdapter mAdapter;
-    private Handler mHandler;
-
-    private ConnectThread mConnectThread;
-    private ConnectedThread mConnectedThread;
-    private int mState;
-    private int mNewState;
-
     // Constants that indicate the current connection state
     public static final int STATE_NONE = 0;       // we're doing nothing
     public static final int STATE_LISTEN = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
+    // Debugging
+    private static final String TAG = "BluetoothChatService";
+    // Name for the SDP record when creating server socket
+    private static final String NAME_SECURE = "BluetoothChatSecure";
+    private static final String NAME_INSECURE = "BluetoothChatInsecure";
+    // Unique UUID for this application
+    private static final UUID SERIAL_PORT_CLASS = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+    // Member fields
+    private final BluetoothAdapter mAdapter;
+    // This is the object that receives interactions from clients.  See
+    // RemoteService for a more complete example.
+    private final IBinder mBinder = new BluetoothChatServiceI();
+    private Handler mHandler;
+    private ConnectThread mConnectThread;
+    private ConnectedThread mConnectedThread;
+    private int mState;
+    private int mNewState;
     private NotificationManager mNM;
-
     private int NOTIFICATION = R.string.local_service_started;
+
 
     public BluetoothChatService() {
         super();
@@ -78,21 +76,11 @@ public class BluetoothChatService extends Service {
         mNewState = mState;
     }
 
-
-    public class BluetoothChatServiceI extends Binder {
-        BluetoothChatService getService() {
-            return BluetoothChatService.this;
-        }
-        void setHandler(Handler handler) {
-            mHandler = handler;
-        }
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
 
-        mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
     }
 
@@ -144,11 +132,6 @@ public class BluetoothChatService extends Service {
         return mBinder;
     }
 
-
-    // This is the object that receives interactions from clients.  See
-    // RemoteService for a more complete example.
-    private final IBinder mBinder = new BluetoothChatServiceI();
-
     /**
      * Update UI title according to the current state of the chat connection
      */
@@ -186,6 +169,7 @@ public class BluetoothChatService extends Service {
         super.onDestroy();
 
     }
+
     /**
      * Show a notification while this service is running.
      */
@@ -288,7 +272,6 @@ public class BluetoothChatService extends Service {
         updateUserInterfaceTitle();
     }
 
-
     /**
      * Indicate that the connection attempt failed and notify the UI Activity.
      */
@@ -327,12 +310,22 @@ public class BluetoothChatService extends Service {
         BluetoothChatService.this.startBT();
     }
 
+    public class BluetoothChatServiceI extends Binder {
+        BluetoothChatService getService() {
+            return BluetoothChatService.this;
+        }
+
+        void setHandler(Handler handler) {
+            mHandler = handler;
+        }
+    }
+
     /**
      * This thread runs while attempting to make an outgoing connection
      * with a device. It runs straight through; the connection either
      * succeeds or fails.
      */
-     class ConnectThread extends Thread {
+    class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
 
@@ -481,9 +474,17 @@ public class BluetoothChatService extends Service {
         }
 
 
-        public boolean setLevel(int level) { return mmIConsole.setLevel(level); }
-        public boolean startIConsole() { return mmIConsole.start(); }
-        public boolean stopIConsole() { return mmIConsole.stop(); }
+        public boolean setLevel(int level) {
+            return mmIConsole.setLevel(level);
+        }
+
+        public boolean startIConsole() {
+            return mmIConsole.start();
+        }
+
+        public boolean stopIConsole() {
+            return mmIConsole.stop();
+        }
 
         public void cancel() {
             mmIConsole.stop();
