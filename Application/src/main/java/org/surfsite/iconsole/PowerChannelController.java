@@ -189,7 +189,7 @@ public class PowerChannelController {
                     payload = new AcknowledgedDataMessage(antParcel).getPayload();
                     Log.d(TAG, "AcknowledgedDataMessage: " + payload);
 
-                    if (payload[0] == 0 && payload[1] == 1 && payload[2] == 0xAA) {
+                    if ((payload[0] == 0) && (payload[1] == 1) && (payload[2] == (byte)0xAA)) {
                         payload[0] = (byte) 0x01;
                         payload[1] = (byte) 0xAC;
                         payload[2] = (byte) 0xFF;
