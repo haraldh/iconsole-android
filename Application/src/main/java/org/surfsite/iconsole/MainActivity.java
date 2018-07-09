@@ -30,8 +30,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ViewAnimator;
 
+import org.surfsite.iconsole.ChannelService.ChannelServiceComm;
 
 
 /**
@@ -70,8 +72,16 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     protected void onDestroy() {
-        stopService(new Intent(this, BluetoothChatService.class));
+
+        if(isFinishing())
+        {
+            stopService(new Intent(this, BluetoothChatService.class));
+            stopService(new Intent(this, ChannelService.class));
+        }
 
         super.onDestroy();
     }
+
+
+
 }

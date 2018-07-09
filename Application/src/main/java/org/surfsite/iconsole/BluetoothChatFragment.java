@@ -43,6 +43,7 @@ import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
+import android.content.Intent;
 
 /**
  * This fragment controls Bluetooth to communicate with other devices.
@@ -88,6 +89,8 @@ public class BluetoothChatFragment extends Fragment {
      */
     private BluetoothChatService mChatService = null;
     private boolean mIsBound;
+    private ChannelService.ChannelServiceComm mChannelService;
+    private boolean mChannelServiceBound = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -117,6 +120,8 @@ public class BluetoothChatFragment extends Fragment {
         } else if (mChatService == null) {
             setupChat();
         }
+        if(!mChannelServiceBound) doBindChannelService();
+
     }
 
     @Override
@@ -126,6 +131,9 @@ public class BluetoothChatFragment extends Fragment {
         }
         Log.d(TAG, "onDestroy()");
         doUnbindService();
+        doUnbindChannelService();
+        mChannelServiceConnection = null;
+
         super.onDestroy();
     }
 
@@ -212,6 +220,62 @@ public class BluetoothChatFragment extends Fragment {
             mIsBound = false;
         }
     }
+
+    private ServiceConnection mChannelServiceConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder serviceBinder)
+        {
+            Log.v(TAG, "mChannelServiceConnection.onServiceConnected...");
+
+            mChannelService = (ChannelService.ChannelServiceComm) serviceBinder;
+
+
+            Log.v(TAG, "...mChannelServiceConnection.onServiceConnected");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0)
+        {
+            Log.v(TAG, "mChannelServiceConnection.onServiceDisconnected...");
+
+            // Clearing and disabling when disconnecting from ChannelService
+            mChannelService = null;
+
+            Log.v(TAG, "...mChannelServiceConnection.onServiceDisconnected");
+        }
+    };
+
+    private void doBindChannelService()
+    {
+        Log.v(TAG, "doBindChannelService...");
+
+        // Binds to ChannelService. ChannelService binds and manages connection between the
+        // app and the ANT Radio Service
+        mChannelServiceBound = getActivity().bindService(new Intent(getActivity(), ChannelService.class), mChannelServiceConnection , Context.BIND_AUTO_CREATE);
+
+        if(!mChannelServiceBound)   //If the bind returns false, run the unbind method to update the GUI
+            doUnbindChannelService();
+
+        Log.i(TAG, "  Channel Service binding = "+ mChannelServiceBound);
+
+        Log.v(TAG, "...doBindChannelService");
+    }
+
+    private void doUnbindChannelService()
+    {
+        Log.v(TAG, "doUnbindChannelService...");
+
+        if(mChannelServiceBound)
+        {
+            getActivity().unbindService(mChannelServiceConnection);
+
+            mChannelServiceBound = false;
+        }
+
+        Log.v(TAG, "...doUnbindChannelService");
+    }
+
 
     /**
      * Set up the UI and background operations for chat.
@@ -330,6 +394,7 @@ public class BluetoothChatFragment extends Fragment {
         actionBar.setSubtitle(subTitle);
     }
 
+
     /**
      * The Handler that gets information back from the BluetoothChatService
      */
@@ -371,6 +436,10 @@ public class BluetoothChatFragment extends Fragment {
                     if (!(msg.obj instanceof IConsole.Data))
                         return;
                     IConsole.Data data = (IConsole.Data) msg.obj;
+                    mChannelService.setSpeed(data.mSpeed10 / 10.0);
+                    mChannelService.setPower(data.mPower10 / 10);
+                    mChannelService.setCadence(data.mRPM);
+
                     mSpeedText.setText(String.format("% 3.1f", data.mSpeed10 / 10.0));
                     mPowerText.setText(String.format("% 3.1f", data.mPower10 / 10.0));
                     mRPMText.setText(String.format("%d", data.mRPM));

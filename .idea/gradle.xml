@@ -9,6 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Application" />
+            <option value="$PROJECT_DIR$/android_antlib_4-14" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

@@ -1,4 +1,1 @@
-
-
-
-include 'Application'
+include 'Application', ':android_antlib_4-14'
