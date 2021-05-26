@@ -46,7 +46,7 @@
     <string name="power_n0_0_w">0.0</string>
     <string name="level">Level</string>
     <string name="local_service_started">OpeniConsole Bluetooth active</string>
-    <string name="local_service_label">OpeniConsole</string>
+    <string name="local_service_label">OpeniConsole - TEST</string>
     <string name="secure_connect">Connect to iConsole</string>
 
 </resources>

@@ -34,14 +34,16 @@
         >
 
         <activity
-            android:name=".MainActivity"
+            android:name="org.surfsite.iconsole.MainActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/app_name" android:launchMode="singleTop">
 
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
                 <service android:name=".ChannelService"></service>
 

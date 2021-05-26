@@ -127,7 +127,9 @@ public class ChannelService extends Service {
     }
 
     private void closeAllChannels() {
+            if (powerChannelController != null)
             powerChannelController.close();
+            if (speedChannelController != null)
             speedChannelController.close();
             powerChannelController = null;
             speedChannelController = null;

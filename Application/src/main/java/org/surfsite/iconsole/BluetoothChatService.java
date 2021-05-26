@@ -141,6 +141,7 @@ public class BluetoothChatService extends Service {
         mNewState = mState;
 
         // Give the new state to the Handler so the UI Activity can update
+        if (mHandler != null)
         mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, mNewState, -1).sendToTarget();
     }
 

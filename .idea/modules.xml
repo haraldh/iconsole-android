@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Application/Application.iml" filepath="$PROJECT_DIR$/Application/Application.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android_antlib_4-14/android_antlib_4-14.iml" filepath="$PROJECT_DIR$/android_antlib_4-14/android_antlib_4-14.iml" />
       <module fileurl="file://$PROJECT_DIR$/iconsole-android.iml" filepath="$PROJECT_DIR$/iconsole-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Application/iconsole-android.Application.iml" filepath="$PROJECT_DIR$/.idea/modules/Application/iconsole-android.Application.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android_antlib_4-14/iconsole-android.android_antlib_4-14.iml" filepath="$PROJECT_DIR$/.idea/modules/android_antlib_4-14/iconsole-android.android_antlib_4-14.iml" />
     </modules>
   </component>
 </project>
