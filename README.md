@@ -24,6 +24,6 @@ Contribute via pull requests. If you want to do major contributions, drop me a m
 - workout recording to FIT/TCX/GPX
 - workout profiles
 - Google street view cycling
-- sensor data broadcasting via ANT
+- sensor data broadcasting via ANT (works, message me for a howto or look [here](https://github.com/haraldh/iconsole-android/issues/4))
 
 See also my [python prototype](https://github.com/haraldh/iconsole) for the bluetooth protocol reverse engineering and sensor broadcasting.
