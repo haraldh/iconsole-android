@@ -99,7 +99,7 @@ public class BluetoothChatFragment extends Fragment {
                         return;
                     IConsole.Data data = (IConsole.Data) msg.obj;
                     theFrag.mChannelService.setSpeed(data.mSpeed10 / 10.0);
-                    theFrag.mChannelService.setPower(data.mPower10 * 9 / 100);
+                    theFrag.mChannelService.setPower(data.mPower10 / 10);
                     theFrag.mChannelService.setCadence(data.mRPM);
 
                     theFrag.mSpeedText.setText(String.format("% 3.1f", data.mSpeed10 / 10.0));
